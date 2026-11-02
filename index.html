@@ -329,7 +329,7 @@ const THEMEN = [
   ]},
 
 /* ---------- 2 Grafiken beurteilen ---------- */
-{ id:"grafik", titel:"Grafiken beurteilen", kurz:"Flächen, gekappte Achsen, Zeitausschnitte",
+{ id:"grafik", titel:"Grafiken beurteilen", kurz:"Darstellungen prüfen und beurteilen",
   erkl:`<p>Eine Grafik kann mit <b>völlig richtigen Zahlen</b> trotzdem täuschen. Drei Tricks
   tauchen immer wieder auf.</p>
   <div class="merke"><b>Fünf Fragen an jede Grafik</b><br>
@@ -341,7 +341,7 @@ const THEMEN = [
   <p>Zum Flächentrick: Wächst ein Bild in Höhe <b>und</b> Breite mit dem Faktor k, dann wächst die
   Fläche mit <b>k²</b>. Genau wie bei der zentrischen Streckung.</p>`,
   versionen:[
-  { name:"Flächen", frage:`Eine Werbeanzeige vergleicht den Jahresumsatz dreier Filialen.`,
+  { name:"V1", frage:`Eine Werbeanzeige vergleicht den Jahresumsatz dreier Filialen.`,
     grafik:()=>balken({titel:"Jahresumsatz in 1000 €", labels:["Filiale A","Filiale B","Filiale C"],
       werte:[300,200,100], yMin:0, yMax:350, ticks:[0,100,200,300], quadratisch:true,
       farben:["#1f3a5f","#1f3a5f","#1f3a5f"]}),
@@ -358,7 +358,7 @@ const THEMEN = [
       <p class="rech">Flächenfaktor = 3 · 3 = <b>9</b></p>
       <p>Die Grafik lässt den Unterschied also dreimal größer erscheinen, als er ist. Große Werte
       werden überbetont. Ehrlich wäre: alle Balken gleich breit, nur die Höhe variiert.</p>`},
-  { name:"Gekappte Achse", frage:`Eine Schule wirbt mit den Zustimmungswerten aus einer Umfrage.`,
+  { name:"V2", frage:`Eine Schule wirbt mit den Zustimmungswerten aus einer Umfrage.`,
     grafik:()=>balken({titel:"Zustimmung in Prozent", labels:["Schule X","Schule Y","Unsere Schule"],
       werte:[48,50,52], yMin:46, yMax:54, ticks:[46,48,50,52,54], einheit:" %",
       farben:["#bdbdbd","#bdbdbd","#1f3a5f"]}),
@@ -375,7 +375,7 @@ const THEMEN = [
       Balken ist im Bild <b>dreimal</b> so hoch wie der erste, obwohl der Unterschied winzig ist.</p>
       <p>Fachbegriff: abgeschnittene oder gestauchte Achse. Erlaubt ist so ein Ausschnitt nur mit
       deutlich markiertem Achsenbruch und einer Begründung.</p>`},
-  { name:"Zeitausschnitt", frage:`Ein Verein meldet in seinem Jahresbericht einen Aufschwung bei
+  { name:"V3", frage:`Ein Verein meldet in seinem Jahresbericht einen Aufschwung bei
       den Mitgliederzahlen und zeigt dazu diese Grafik.`,
     grafik:()=>linie({titel:"Mitglieder", labels:["2023","2024","2025","2026"],
       werte:[410,440,470,500], yMin:400, yMax:510, ticks:[400,425,450,475,500], farbe:"#2e8b57"}),
