@@ -1,0 +1,6 @@
+# Nur die fertige Seite veröffentlichen.
+# Klassenarbeit, Erwartungshorizont und Quellen bleiben lokal.
+*
+!.gitignore
+!index.html
+!README.md

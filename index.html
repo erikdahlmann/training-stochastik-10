@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Stochastik · Klasse 10</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f4f1ea; --surface:#ffffff; --ink:#22201c; --muted:#6b665d;
+    --line:#e3ddd0; --accent:#3a5a78; --accent-soft:#e8eef4; --paper:#faf8f3;
+    --ok:#2e8b57; --bad:#c0392b; --warn:#c9821a;
+    --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05);
+    --sidebar:290px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;
+    font-size:17px; line-height:1.6;
+  }
+  .ui{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+
+  /* ---------- Sidebar ---------- */
+  #side{
+    position:fixed; top:0; left:0; bottom:0; width:var(--sidebar);
+    background:var(--surface); border-right:1px solid var(--line);
+    overflow-y:auto; z-index:30;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  #side .brand{padding:18px 18px 13px; border-bottom:1px solid var(--line)}
+  #side .brand h1{margin:0; font-size:1.02rem}
+  #side .brand p{margin:3px 0 0; font-size:.78rem; color:var(--muted)}
+  #prog{margin-top:12px}
+  #prog .bar{height:5px; background:var(--line); border-radius:3px; overflow:hidden}
+  #prog .bar i{display:block; height:100%; background:var(--ok); width:0; transition:width .3s}
+  #prog .txt{font-size:.74rem; color:var(--muted); margin-top:5px}
+
+  a.th{
+    display:flex; gap:9px; align-items:baseline; padding:9px 16px 9px 18px;
+    text-decoration:none; color:var(--ink); font-size:.86rem; cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  a.th:hover{background:var(--paper)}
+  a.th.on{background:var(--accent-soft); border-left-color:var(--accent); font-weight:600}
+  a.th .num{flex:0 0 20px; color:var(--muted); font-size:.78rem; font-variant-numeric:tabular-nums}
+  a.th.on .num{color:var(--accent)}
+  a.th .ttl{flex:1; line-height:1.35}
+  a.th .dots{flex:0 0 auto; display:flex; gap:3px; margin-top:6px}
+  a.th .dots i{width:7px; height:7px; border-radius:50%; background:transparent;
+               border:1.4px solid var(--line); display:block}
+  a.th .dots i.done{background:var(--ok); border-color:var(--ok)}
+
+  /* ---------- Inhalt ---------- */
+  #wrap{margin-left:var(--sidebar); padding:0 0 90px}
+  .topbar{
+    position:sticky; top:0; z-index:20; background:rgba(244,241,234,.93);
+    backdrop-filter:blur(9px); border-bottom:1px solid var(--line);
+    padding:11px 26px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  }
+  .topbar .meta{font-size:.8rem; color:var(--muted); font-family:-apple-system,sans-serif}
+  .topbar .sp{flex:1}
+  #menuBtn{display:none}
+  main{max-width:900px; margin:0 auto; padding:24px 26px 0}
+
+  .hd{margin-bottom:18px}
+  .hd .kicker{font-family:-apple-system,sans-serif; font-size:.75rem; text-transform:uppercase;
+              letter-spacing:1px; color:var(--accent); font-weight:600}
+  .hd h2{margin:5px 0 4px; font-size:1.6rem; line-height:1.22}
+  .hd .sub{color:var(--muted); font-size:.93rem}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+        box-shadow:var(--shadow); padding:20px 22px; margin-bottom:18px}
+  .card > h3{font-family:-apple-system,sans-serif; font-size:.75rem; text-transform:uppercase;
+             letter-spacing:1px; color:var(--muted); margin:0 0 12px; font-weight:600}
+
+  .erkl{background:var(--paper)}
+  .erkl p{margin:0 0 9px}
+  .erkl p:last-child{margin-bottom:0}
+  .merke{background:#2a3f4f; color:#f2efe6; border-radius:10px; padding:14px 18px;
+         margin:12px 0 4px; font-size:.97rem; line-height:1.75}
+  .merke b{color:#ffd98a}
+  .merke .katex{color:#f2efe6}
+
+  /* Versionen */
+  .vers{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; align-items:center}
+  .vers .lbl{font-family:-apple-system,sans-serif; font-size:.8rem; color:var(--muted); margin-right:4px}
+  button.v{font-family:-apple-system,sans-serif; font-size:.85rem; padding:7px 15px; cursor:pointer;
+           background:var(--surface); border:1px solid var(--line); border-radius:9px;
+           color:var(--ink); transition:.15s}
+  button.v:hover{background:var(--accent-soft); border-color:var(--accent)}
+  button.v.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  button.v .ok{color:var(--ok); font-weight:700; margin-left:5px}
+  button.v.on .ok{color:#cdebd8}
+
+  .frage{font-size:1.02rem; margin-bottom:14px}
+  .frage b{font-weight:600}
+
+  /* Eingabefelder */
+  .feld{display:flex; gap:11px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+  .feld .fl{flex:0 0 auto; min-width:150px; font-size:.98rem}
+  .feld input[type=text]{
+    width:112px; padding:8px 11px; border:1px solid var(--line); border-radius:9px;
+    font-family:inherit; font-size:1rem; background:var(--paper); color:var(--ink);
+  }
+  .feld input:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+  .feld input.r{border-color:var(--ok); background:#eaf5ee}
+  .feld input.f{border-color:var(--bad); background:#fdeeec}
+  .feld .hint{font-size:.82rem; color:var(--muted); font-family:-apple-system,sans-serif}
+  .feld .mark{font-size:1.1rem; width:20px}
+
+  /* Vierfeldertafel zum Ausfuellen */
+  table.vf{border-collapse:collapse; margin:4px 0 14px; font-size:.97rem}
+  table.vf th, table.vf td{border:1px solid var(--line); padding:0; text-align:center; min-width:86px}
+  table.vf th{background:var(--paper); font-family:-apple-system,sans-serif; font-size:.84rem;
+              font-weight:600; padding:8px 10px; color:var(--muted)}
+  table.vf th.ev{color:var(--ink)}
+  table.vf td.geg{background:#f0ece2; font-weight:600; padding:9px 10px}
+  table.vf input{width:100%; border:none; background:transparent; text-align:center;
+                 font-family:inherit; font-size:1rem; padding:9px 4px; color:var(--ink); outline:none}
+  table.vf input:focus{background:var(--accent-soft)}
+  table.vf td.r input{background:#eaf5ee; color:var(--ok); font-weight:600}
+  table.vf td.f input{background:#fdeeec; color:var(--bad)}
+
+  /* Auswahlfragen */
+  .wahl{display:flex; flex-direction:column; gap:7px; margin-bottom:12px}
+  .wahl label{display:flex; gap:9px; align-items:flex-start; padding:9px 13px;
+              border:1px solid var(--line); border-radius:10px; cursor:pointer;
+              background:var(--paper); font-size:.97rem}
+  .wahl label:hover{border-color:var(--accent)}
+  .wahl label.r{border-color:var(--ok); background:#eaf5ee}
+  .wahl label.f{border-color:var(--bad); background:#fdeeec}
+  .wahl input{margin-top:5px}
+
+  .btnrow{display:flex; gap:9px; flex-wrap:wrap; margin-top:14px}
+  button.act{font-family:-apple-system,sans-serif; font-size:.87rem; padding:9px 17px; cursor:pointer;
+             background:var(--paper); border:1px solid var(--line); border-radius:9px;
+             color:var(--ink); transition:.15s}
+  button.act:hover{background:var(--accent-soft); border-color:var(--accent)}
+  button.act.pri{background:var(--accent); color:#fff; border-color:var(--accent)}
+  button.act.pri:hover{opacity:.9}
+
+  .fb{padding:12px 16px; border-radius:10px; margin-top:14px; font-size:.97rem; display:none}
+  .fb.show{display:block}
+  .fb.gut{background:#eaf5ee; border:1px solid #bcdcc8}
+  .fb.teil{background:#fdf6e8; border:1px solid #efd9a8}
+  .fb.schlecht{background:#fdeeec; border:1px solid #f0c8c2}
+
+  details.loes{margin-top:14px}
+  details.loes summary{cursor:pointer; color:var(--accent); font-family:-apple-system,sans-serif;
+                       font-size:.88rem; padding:7px 0}
+  .loesbox{background:var(--paper); border:1px solid var(--line); border-radius:10px;
+           padding:14px 18px; font-size:.97rem}
+  .loesbox p{margin:0 0 9px}
+  .loesbox p:last-child{margin-bottom:0}
+  .rech{font-family:Cambria,Georgia,serif}
+
+  /* Brueche */
+  fr{display:inline-block; vertical-align:-0.46em; text-align:center; margin:0 .16em; line-height:1.12}
+  fz{display:block; padding:0 .22em}
+  fn{display:block; padding:0 .22em; border-top:1px solid currentColor}
+
+  .grafikbox{border:1px solid var(--line); border-radius:10px; padding:12px; background:#fff;
+             margin:10px 0 14px}
+  .grafikbox svg{width:100%; height:auto; display:block; max-height:300px}
+  ovl{text-decoration:overline}
+
+  #scrim{display:none; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:29}
+  @media(max-width:900px){
+    #side{transform:translateX(-100%); transition:transform .22s; box-shadow:var(--shadow)}
+    body.nav-open #side{transform:none}
+    body.nav-open #scrim{display:block}
+    #wrap{margin-left:0}
+    #menuBtn{display:inline-block}
+    main{padding:18px 15px 0}
+  }
+</style>
+</head>
+<body>
+
+<nav id="side">
+  <div class="brand">
+    <h1>Training Stochastik</h1>
+    <p>Klasse 10 · Vorbereitung auf die 1. Klassenarbeit</p>
+    <div id="prog"><div class="bar"><i></i></div><div class="txt"></div></div>
+  </div>
+  <div id="nav"></div>
+  <div style="padding:16px 18px 26px">
+    <button class="act" id="reset" style="width:100%">Fortschritt zurücksetzen</button>
+  </div>
+</nav>
+<div id="scrim"></div>
+
+<div id="wrap">
+  <div class="topbar">
+    <button class="act" id="menuBtn">☰ Themen</button>
+    <span class="meta" id="crumb"></span>
+    <span class="sp"></span>
+    <button class="act" id="prev">← zurück</button>
+    <button class="act" id="next">weiter →</button>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ============================================================
+   Hilfsfunktionen fuer Brueche und Grafiken
+   ============================================================ */
+const fr = (z,n) => `<fr><fz>${z}</fz><fn>${n}</fn></fr>`;
+const ovl = s => `<ovl>${s}</ovl>`;
+
+/* Balkendiagramm; wenn quadratisch=true waechst auch die Breite mit (Flaechentrick) */
+function balken({titel, labels, werte, yMin, yMax, ticks, einheit, quadratisch, farben}){
+  const W=620, H=300, L=56, R=16, T=26, B=46;
+  const px=L, py=T, pw=W-L-R, ph=H-T-B;
+  const y=v=>py+ph-(v-yMin)/(yMax-yMin)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">`;
+  s+=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  s+=`<text x="${W/2}" y="15" text-anchor="middle" font-size="13" font-weight="700" fill="#22201c">${titel}</text>`;
+  ticks.forEach(t=>{ const yy=y(t);
+    s+=`<line x1="${px}" y1="${yy}" x2="${px+pw}" y2="${yy}" stroke="#eceadf"/>`;
+    s+=`<text x="${px-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#6b665d">${String(t).replace(".",",")}${einheit||""}</text>`; });
+  s+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<line x1="${px}" y1="${py+ph}" x2="${px+pw}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  if(quadratisch){
+    const hs=werte.map(v=>(v-yMin)/(yMax-yMin)*ph), lu=10;
+    const gesamt=hs.reduce((a,b)=>a+b,0)+lu*(werte.length-1);
+    let x=px+(pw-gesamt)/2;
+    werte.forEach((v,i)=>{ const h=hs[i];
+      s+=`<rect x="${x}" y="${py+ph-h}" width="${h}" height="${h}" fill="${(farben&&farben[i])||"#1f3a5f"}" rx="3"/>`;
+      s+=`<text x="${x+h/2}" y="${py+ph+16}" text-anchor="middle" font-size="11" fill="#22201c">${labels[i]}</text>`;
+      s+=`<text x="${x+h/2}" y="${py+ph+30}" text-anchor="middle" font-size="10.5" fill="#6b665d">${String(v).replace(".",",")}${einheit||""}</text>`;
+      x+=h+lu; });
+  } else {
+    const gap=pw/werte.length, bw=gap*0.5;
+    werte.forEach((v,i)=>{ const cx=px+gap*i+gap/2, top=y(v), h=py+ph-top;
+      s+=`<rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${Math.max(h,0)}" fill="${(farben&&farben[i])||"#1f3a5f"}" rx="2"/>`;
+      s+=`<text x="${cx}" y="${top-7}" text-anchor="middle" font-size="12" font-weight="600" fill="#22201c">${String(v).replace(".",",")}${einheit||""}</text>`;
+      s+=`<text x="${cx}" y="${py+ph+18}" text-anchor="middle" font-size="11.5" fill="#22201c">${labels[i]}</text>`; });
+  }
+  return s+`</svg>`;
+}
+
+function linie({titel, labels, werte, yMin, yMax, ticks, farbe}){
+  const W=620, H=290, L=56, R=16, T=26, B=42;
+  const px=L, py=T, pw=W-L-R, ph=H-T-B, n=werte.length;
+  const x=i=> n===1?px+pw/2 : px+i*(pw/(n-1));
+  const y=v=>py+ph-(v-yMin)/(yMax-yMin)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">`;
+  s+=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  s+=`<text x="${W/2}" y="15" text-anchor="middle" font-size="13" font-weight="700" fill="#22201c">${titel}</text>`;
+  ticks.forEach(t=>{ const yy=y(t);
+    s+=`<line x1="${px}" y1="${yy}" x2="${px+pw}" y2="${yy}" stroke="#eceadf"/>`;
+    s+=`<text x="${px-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#6b665d">${t}</text>`; });
+  s+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<line x1="${px}" y1="${py+ph}" x2="${px+pw}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<polyline points="${werte.map((v,i)=>x(i)+","+y(v)).join(" ")}" fill="none" stroke="${farbe||"#3a5a78"}" stroke-width="2.6" stroke-linejoin="round"/>`;
+  werte.forEach((v,i)=>{
+    const anc = i===0?"start":(i===n-1?"end":"middle");
+    const lx  = i===0?x(i)+3:(i===n-1?x(i)-3:x(i));
+    s+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="${farbe||"#3a5a78"}"/>`;
+    s+=`<text x="${lx}" y="${y(v)-11}" text-anchor="${anc}" font-size="11" fill="#22201c">${v}</text>`;
+    s+=`<text x="${x(i)}" y="${py+ph+18}" text-anchor="middle" font-size="11" fill="#22201c">${labels[i]}</text>`; });
+  return s+`</svg>`;
+}
+</script>
+<script>
+/* ============================================================
+   Aufgaben. Jedes Thema hat bis zu drei Versionen.
+   Feldtypen:  zahl | tafel | wahl
+   ============================================================ */
+const THEMEN = [
+
+/* ---------- 1 Mehrstufige Baeume ---------- */
+{ id:"baum", titel:"Mehrstufige Bäume", kurz:"Pfadregeln, Ziehen ohne Zurücklegen",
+  erkl:`<p>Beim Ziehen <b>ohne Zurücklegen</b> ändern sich die Wahrscheinlichkeiten von Stufe zu
+  Stufe, weil sowohl die günstigen Fälle als auch die Gesamtzahl kleiner werden.</p>
+  <p>Entlang eines Pfades wird <b>multipliziert</b> (1. Pfadregel). Mehrere Pfade, die zum selben
+  Ereignis gehören, werden <b>addiert</b> (2. Pfadregel).</p>
+  <div class="merke"><b>Mindestens-Aufgaben</b><br>
+  „mindestens zwei“ heißt: genau zwei <b>oder</b> drei. Zähle alle passenden Pfade zusammen.<br>
+  Oft ist der Umweg über das Gegenereignis kürzer: P(mindestens 1) = 1 − P(keiner).</div>`,
+  versionen:[
+  { name:"Kugeln", frage:`In einer Schale liegen <b>5 Kugeln</b>: <b>2 rote</b> und <b>3 blaue</b>.
+      Du ziehst <b>zwei Kugeln nacheinander ohne Zurücklegen</b>.`,
+    felder:[
+      {t:"zahl", l:"P(beide rot)", soll:0.1, hint:"0,1 oder 10 %"},
+      {t:"zahl", l:"P(genau eine rot)", soll:0.6},
+      {t:"zahl", l:"P(mindestens eine rot)", soll:0.7}
+    ],
+    loes:`<p><b>Baum:</b> 1. Stufe rot ${fr(2,5)}, blau ${fr(3,5)}. Nach einer roten bleiben
+      ${fr(1,4)} rot und ${fr(3,4)} blau, nach einer blauen ${fr(2,4)} rot und ${fr(2,4)} blau.</p>
+      <p class="rech">P(rr) = ${fr(2,5)} · ${fr(1,4)} = ${fr(2,20)} = <b>0,1</b></p>
+      <p class="rech">P(genau eine rot) = ${fr(2,5)} · ${fr(3,4)} + ${fr(3,5)} · ${fr(2,4)}
+        = ${fr(6,20)} + ${fr(6,20)} = ${fr(12,20)} = <b>0,6</b></p>
+      <p class="rech">P(mindestens eine rot) = 1 − P(bb) = 1 − ${fr(3,5)} · ${fr(2,4)}
+        = 1 − ${fr(6,20)} = <b>0,7</b></p>
+      <p>Der Weg über das Gegenereignis ist hier deutlich kürzer als drei Pfade zu addieren.</p>`},
+  { name:"Karten", frage:`Ein Stapel hat <b>6 Karten</b>, davon <b>4 mit Stern</b> und
+      <b>2 ohne</b>. Du ziehst <b>drei Karten ohne Zurücklegen</b>.`,
+    felder:[
+      {t:"zahl", l:"P(alle drei mit Stern)", soll:0.2},
+      {t:"zahl", l:"P(mindestens zwei Sterne)", soll:0.8}
+    ],
+    loes:`<p class="rech">P(SSS) = ${fr(4,6)} · ${fr(3,5)} · ${fr(2,4)} = ${fr(24,120)} = <b>0,2</b></p>
+      <p>Für „mindestens zwei“ kommen die drei Pfade mit genau zwei Sternen dazu:</p>
+      <p class="rech">SSN = ${fr(4,6)} · ${fr(3,5)} · ${fr(2,4)} = ${fr(24,120)}<br>
+         SNS = ${fr(4,6)} · ${fr(2,5)} · ${fr(3,4)} = ${fr(24,120)}<br>
+         NSS = ${fr(2,6)} · ${fr(4,5)} · ${fr(3,4)} = ${fr(24,120)}</p>
+      <p class="rech">P(mindestens 2) = ${fr(24,120)} + 3 · ${fr(24,120)} = ${fr(96,120)} = <b>0,8</b></p>`},
+  { name:"Socken", frage:`In der Schublade liegen <b>10 Socken</b>: <b>6 schwarze</b> und
+      <b>4 blaue</b>. Du greifst im Dunkeln <b>zwei</b> heraus.`,
+    felder:[
+      {t:"zahl", l:"P(beide schwarz)", soll:1/3, hint:"gerundet 0,333"},
+      {t:"zahl", l:"P(beide gleichfarbig)", soll:7/15, hint:"gerundet 0,467"},
+      {t:"zahl", l:"P(zwei verschiedene)", soll:8/15, hint:"gerundet 0,533"}
+    ],
+    loes:`<p class="rech">P(ss) = ${fr(6,10)} · ${fr(5,9)} = ${fr(30,90)} = ${fr(1,3)} ≈ <b>0,333</b></p>
+      <p class="rech">P(bb) = ${fr(4,10)} · ${fr(3,9)} = ${fr(12,90)} = ${fr(2,15)}</p>
+      <p class="rech">P(gleich) = ${fr(1,3)} + ${fr(2,15)} = ${fr(5,15)} + ${fr(2,15)}
+        = ${fr(7,15)} ≈ <b>0,467</b></p>
+      <p class="rech">P(verschieden) = 1 − ${fr(7,15)} = ${fr(8,15)} ≈ <b>0,533</b></p>
+      <p>Hier gehen die Zahlen nicht glatt auf. Gib Brüche an oder runde auf drei Stellen.</p>`}
+  ]},
+
+/* ---------- 2 Grafiken beurteilen ---------- */
+{ id:"grafik", titel:"Grafiken beurteilen", kurz:"Flächen, gekappte Achsen, Zeitausschnitte",
+  erkl:`<p>Eine Grafik kann mit <b>völlig richtigen Zahlen</b> trotzdem täuschen. Drei Tricks
+  tauchen immer wieder auf.</p>
+  <div class="merke"><b>Fünf Fragen an jede Grafik</b><br>
+  1. Wo beginnt die y-Achse?<br>
+  2. Vergleiche ich Längen oder Flächen?<br>
+  3. Absolute Zahlen oder Anteile?<br>
+  4. Welcher Zeitraum, und warum gerade der?<br>
+  5. Wer hat die Grafik gemacht, und wozu?</div>
+  <p>Zum Flächentrick: Wächst ein Bild in Höhe <b>und</b> Breite mit dem Faktor k, dann wächst die
+  Fläche mit <b>k²</b>. Genau wie bei der zentrischen Streckung.</p>`,
+  versionen:[
+  { name:"Flächen", frage:`Eine Werbeanzeige vergleicht den Jahresumsatz dreier Filialen.`,
+    grafik:()=>balken({titel:"Jahresumsatz in 1000 €", labels:["Filiale A","Filiale B","Filiale C"],
+      werte:[300,200,100], yMin:0, yMax:350, ticks:[0,100,200,300], quadratisch:true,
+      farben:["#1f3a5f","#1f3a5f","#1f3a5f"]}),
+    felder:[
+      {t:"wahl", f:"Welcher Trick steckt in dieser Grafik?",
+       opt:["Die y-Achse beginnt nicht bei null.",
+            "Die Blöcke wachsen in Höhe und Breite, das Auge vergleicht Flächen.",
+            "Es werden absolute statt relativer Zahlen gezeigt."], soll:1},
+      {t:"zahl", l:"Umsatz A geteilt durch Umsatz C", soll:3, hint:"nur die Zahl"},
+      {t:"zahl", l:"Um welchen Faktor ist die Fläche von A größer als die von C?", soll:9}
+    ],
+    loes:`<p>A setzt 300, C setzt 100 ab, also den <b>dreifachen</b> Umsatz. Der Block von A ist
+      aber dreimal so hoch <b>und</b> dreimal so breit.</p>
+      <p class="rech">Flächenfaktor = 3 · 3 = <b>9</b></p>
+      <p>Die Grafik lässt den Unterschied also dreimal größer erscheinen, als er ist. Große Werte
+      werden überbetont. Ehrlich wäre: alle Balken gleich breit, nur die Höhe variiert.</p>`},
+  { name:"Gekappte Achse", frage:`Eine Schule wirbt mit den Zustimmungswerten aus einer Umfrage.`,
+    grafik:()=>balken({titel:"Zustimmung in Prozent", labels:["Schule X","Schule Y","Unsere Schule"],
+      werte:[48,50,52], yMin:46, yMax:54, ticks:[46,48,50,52,54], einheit:" %",
+      farben:["#bdbdbd","#bdbdbd","#1f3a5f"]}),
+    felder:[
+      {t:"zahl", l:"Wie viele Prozentpunkte liegen zwischen Schule X und unserer Schule?", soll:4},
+      {t:"wahl", f:"Was müsste man ändern, damit die Grafik ehrlich ist?",
+       opt:["Die Balken schmaler zeichnen.",
+            "Die y-Achse bei 0 beginnen lassen oder den Achsenbruch deutlich markieren.",
+            "Prozent in absolute Zahlen umrechnen."], soll:1}
+    ],
+    loes:`<p>Die Werte sind 48 %, 50 % und 52 %. Der Unterschied beträgt also nur
+      <b>4 Prozentpunkte</b>.</p>
+      <p>Weil die Achse erst bei 46 beginnt, zeigt sie nur einen 8-Punkte-Ausschnitt. Der blaue
+      Balken ist im Bild <b>dreimal</b> so hoch wie der erste, obwohl der Unterschied winzig ist.</p>
+      <p>Fachbegriff: abgeschnittene oder gestauchte Achse. Erlaubt ist so ein Ausschnitt nur mit
+      deutlich markiertem Achsenbruch und einer Begründung.</p>`},
+  { name:"Zeitausschnitt", frage:`Ein Verein meldet in seinem Jahresbericht einen Aufschwung bei
+      den Mitgliederzahlen und zeigt dazu diese Grafik.`,
+    grafik:()=>linie({titel:"Mitglieder", labels:["2023","2024","2025","2026"],
+      werte:[410,440,470,500], yMin:400, yMax:510, ticks:[400,425,450,475,500], farbe:"#2e8b57"}),
+    felder:[
+      {t:"wahl", f:"Die Zahlen seit 2018 lauten 900, 820, 700, 600, 500, 410, 440, 470, 500. Was stimmt?",
+       opt:["Der Verein wächst seit 2018 durchgehend.",
+            "Über den ganzen Zeitraum hat der Verein stark verloren, erst zuletzt geht es leicht aufwärts.",
+            "Die Zahlen sind erfunden."], soll:1},
+      {t:"zahl", l:"Um wie viele Mitglieder hat der Verein seit 2018 insgesamt verloren?", soll:400}
+    ],
+    loes:`<p>Die Grafik zeigt nur die letzten vier Jahre und startet die Achse bei 400. In diesem
+      Ausschnitt steigt die Kurve tatsächlich.</p>
+      <p>Über alle Jahre gesehen ist der Verein von <b>900</b> auf <b>500</b> Mitglieder gefallen,
+      also um <b>400</b> Mitglieder oder rund 44 Prozent.</p>
+      <p>Zwei gegensätzliche Aussagen aus denselben echten Zahlen. Wer einen Trend behauptet, muss
+      den Zeitraum angeben und begründen, warum gerade dieser gewählt wurde.</p>`}
+  ]},
+
+/* ---------- 3 Vierfeldertafel vervollstaendigen ---------- */
+{ id:"tafel", titel:"Vierfeldertafel ergänzen", kurz:"aus vier Angaben die ganze Tafel",
+  erkl:`<p>In einer Vierfeldertafel sind die Randfelder <b>Summen</b>. Kennst du drei passende
+  Werte, ergibt sich alles Übrige durch Addieren und Subtrahieren.</p>
+  <div class="merke"><b>Bedingte Wahrscheinlichkeit</b><br>
+  \\(P_A(B) = \\dfrac{P(A\\cap B)}{P(A)}\\)<br><br>
+  In der Tafel: das Feld teilen durch die <b>Randsumme der Bedingung</b>.<br>
+  Die Bedingung ist die neue Grundmenge.</div>
+  <p>Achte auf den Unterschied: Bei \\(P(A\\cap B)\\) teilst du durch die Gesamtzahl, bei
+  \\(P_A(B)\\) nur durch die Randsumme von A.</p>`,
+  versionen:[
+  { name:"400 Personen", frage:`Befragt wurden <b>400 Personen</b> zu zwei Merkmalen A und B.`,
+    tafel:{ kopf:["Merkmal","A","<ovl>A</ovl>","Summe"], zeilen:["B","<ovl>B</ovl>","Summe"],
+      werte:[[60,100,160],[40,200,240],[100,300,400]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.6},
+      {t:"zahl", l:"P<sub>B</sub>(A)", soll:0.375},
+      {t:"zahl", l:"P(A ∩ <ovl>B</ovl>)", soll:0.1}
+    ],
+    loes:`<p>Ergänzen: <ovl>A</ovl>∩B = 160 − 60 = 100. A∩<ovl>B</ovl> = 100 − 60 = 40.
+      <ovl>A</ovl> = 400 − 100 = 300. <ovl>A</ovl>∩<ovl>B</ovl> = 300 − 100 = 200.</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(60,100)} = <b>0,6</b> &nbsp;&nbsp;
+        P<sub>B</sub>(A) = ${fr(60,160)} = <b>0,375</b> &nbsp;&nbsp;
+        P(A ∩ <ovl>B</ovl>) = ${fr(40,400)} = <b>0,1</b></p>
+      <p>Beachte: Bei den ersten beiden teilst du durch eine Randsumme, beim letzten durch die
+      Gesamtzahl 400.</p>`},
+  { name:"250 Personen", frage:`Befragt wurden <b>250 Personen</b> zu zwei Merkmalen A und B.`,
+    tafel:{ kopf:["Merkmal","A","<ovl>A</ovl>","Summe"], zeilen:["B","<ovl>B</ovl>","Summe"],
+      werte:[[80,70,150],[20,80,100],[100,150,250]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.8},
+      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:70/150, hint:"gerundet 0,467"},
+      {t:"zahl", l:"P(B)", soll:0.6}
+    ],
+    loes:`<p>Ergänzen: <ovl>A</ovl>∩B = 150 − 80 = 70. A∩<ovl>B</ovl> = 100 − 80 = 20.
+      <ovl>A</ovl> = 250 − 100 = 150. <ovl>A</ovl>∩<ovl>B</ovl> = 150 − 70 = 80.</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(80,100)} = <b>0,8</b> &nbsp;&nbsp;
+        P<sub><ovl>A</ovl></sub>(B) = ${fr(70,150)} ≈ <b>0,467</b> &nbsp;&nbsp;
+        P(B) = ${fr(150,250)} = <b>0,6</b></p>
+      <p>Hier sieht man gut: Unter der Bedingung A ist B viel wahrscheinlicher (0,8) als insgesamt
+      (0,6). A und B sind also <b>nicht</b> unabhängig.</p>`},
+  { name:"500 Personen", frage:`Befragt wurden <b>500 Personen</b> zu zwei Merkmalen A und B.`,
+    tafel:{ kopf:["Merkmal","A","<ovl>A</ovl>","Summe"], zeilen:["B","<ovl>B</ovl>","Summe"],
+      werte:[[90,60,150],[110,240,350],[200,300,500]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.45},
+      {t:"zahl", l:"P<sub>B</sub>(A)", soll:0.6},
+      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:0.2}
+    ],
+    loes:`<p>Ergänzen: <ovl>A</ovl>∩B = 150 − 90 = 60. A∩<ovl>B</ovl> = 200 − 90 = 110.
+      <ovl>A</ovl> = 500 − 200 = 300. <ovl>A</ovl>∩<ovl>B</ovl> = 300 − 60 = 240.</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(90,200)} = <b>0,45</b> &nbsp;&nbsp;
+        P<sub>B</sub>(A) = ${fr(90,150)} = <b>0,6</b> &nbsp;&nbsp;
+        P<sub><ovl>A</ovl></sub>(B) = ${fr(60,300)} = <b>0,2</b></p>
+      <p>Mit P(A) = 0,4 und P<sub>A</sub>(B) = 0,45 sowie P<sub><ovl>A</ovl></sub>(B) = 0,2 könntest
+      du jetzt den Baum mit A auf der ersten Stufe vollständig zeichnen.</p>`}
+  ]},
+
+/* ---------- 4 Vom Sachtext zur Tafel ---------- */
+{ id:"text", titel:"Vom Sachtext zur Tafel", kurz:"Angaben richtig einsortieren",
+  erkl:`<p>Der schwierigste Schritt ist das Einsortieren. Gehe immer in dieser Reihenfolge vor.</p>
+  <div class="merke"><b>Drei Schritte</b><br>
+  1. Gesamtzahl in die Ecke unten rechts.<br>
+  2. Jede Textangabe einem Feld zuordnen. Achte auf das Wort <b>davon</b>, das führt immer in ein
+  Innenfeld.<br>
+  3. Der Rest ergibt sich durch Subtraktion.</div>
+  <p>Die Formulierung „weder … noch“ meint immer das Feld unten rechts im Inneren, also
+  \\(\\overline{A}\\cap\\overline{B}\\).</p>`,
+  versionen:[
+  { name:"Bibliothek", frage:`In einer Bücherei stehen <b>200 Bücher</b>. <b>80</b> davon sind
+      Sachbücher (S), und <b>30</b> der Sachbücher sind gerade ausgeliehen (A). <b>90</b> Bücher
+      sind weder Sachbuch noch ausgeliehen.`,
+    tafel:{ kopf:["","S","<ovl>S</ovl>","Summe"], zeilen:["A","<ovl>A</ovl>","Summe"],
+      werte:[[30,30,60],[50,90,140],[80,120,200]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(A), also ausgeliehen", soll:0.3},
+      {t:"zahl", l:"P<sub>S</sub>(A)", soll:0.375},
+      {t:"zahl", l:"P<sub>A</sub>(S)", soll:0.5}
+    ],
+    loes:`<p><ovl>S</ovl> = 200 − 80 = 120. Davon sind 90 nicht ausgeliehen, also
+      <ovl>S</ovl>∩A = 120 − 90 = 30. Damit A = 30 + 30 = 60 und S∩<ovl>A</ovl> = 80 − 30 = 50.</p>
+      <p class="rech">P(A) = ${fr(60,200)} = <b>0,3</b> &nbsp;&nbsp;
+        P<sub>S</sub>(A) = ${fr(30,80)} = <b>0,375</b> &nbsp;&nbsp;
+        P<sub>A</sub>(S) = ${fr(30,60)} = <b>0,5</b></p>
+      <p>Sachbücher werden also häufiger ausgeliehen als der Durchschnitt (0,375 gegen 0,3).</p>`},
+  { name:"Sportfest", frage:`Am Sportfest nehmen <b>150 Kinder</b> teil. <b>60</b> laufen Staffel (St),
+      davon <b>30</b> machen auch Weitsprung (W). <b>54</b> Kinder machen weder Staffel noch
+      Weitsprung.`,
+    tafel:{ kopf:["","St","<ovl>St</ovl>","Summe"], zeilen:["W","<ovl>W</ovl>","Summe"],
+      werte:[[30,36,66],[30,54,84],[60,90,150]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(W), also Weitsprung", soll:0.44},
+      {t:"zahl", l:"P<sub>St</sub>(W)", soll:0.5},
+      {t:"zahl", l:"P<sub>W</sub>(St)", soll:30/66, hint:"gerundet 0,455"}
+    ],
+    loes:`<p><ovl>St</ovl> = 150 − 60 = 90. Davon machen 54 keinen Weitsprung, also
+      <ovl>St</ovl>∩W = 90 − 54 = 36. Damit W = 30 + 36 = 66 und St∩<ovl>W</ovl> = 60 − 30 = 30.</p>
+      <p class="rech">P(W) = ${fr(66,150)} = <b>0,44</b> &nbsp;&nbsp;
+        P<sub>St</sub>(W) = ${fr(30,60)} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>W</sub>(St) = ${fr(30,66)} ≈ <b>0,455</b></p>`},
+  { name:"Verkehrskontrolle", frage:`Bei einer Kontrolle werden <b>250 Autos</b> geprüft.
+      <b>100</b> sind Diesel (D), davon werden <b>25</b> beanstandet (B). <b>135</b> Autos sind
+      weder Diesel noch beanstandet.`,
+    tafel:{ kopf:["","D","<ovl>D</ovl>","Summe"], zeilen:["B","<ovl>B</ovl>","Summe"],
+      werte:[[25,15,40],[75,135,210],[100,150,250]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(B), also beanstandet", soll:0.16},
+      {t:"zahl", l:"P<sub>D</sub>(B)", soll:0.25},
+      {t:"zahl", l:"P<sub>B</sub>(D)", soll:0.625}
+    ],
+    loes:`<p><ovl>D</ovl> = 250 − 100 = 150. Davon sind 135 nicht beanstandet, also
+      <ovl>D</ovl>∩B = 15. Damit B = 25 + 15 = 40 und D∩<ovl>B</ovl> = 75.</p>
+      <p class="rech">P(B) = ${fr(40,250)} = <b>0,16</b> &nbsp;&nbsp;
+        P<sub>D</sub>(B) = ${fr(25,100)} = <b>0,25</b> &nbsp;&nbsp;
+        P<sub>B</sub>(D) = ${fr(25,40)} = <b>0,625</b></p>
+      <p>Die letzte Zahl dreht die Bedingung um: Von den beanstandeten Autos sind 62,5 % Diesel,
+      obwohl Diesel nur 40 % aller Autos ausmachen.</p>`}
+  ]},
+
+/* ---------- 5 Prozentangaben ---------- */
+{ id:"prozent", titel:"Tafel aus Prozentangaben", kurz:"Wahrscheinlichkeiten statt Anzahlen",
+  erkl:`<p>Sind nur Prozente gegeben, rechnest du mit der Gesamtsumme <b>1</b> statt mit einer
+  Anzahl. Die Tafel funktioniert genauso.</p>
+  <div class="merke"><b>Typische Angabe</b><br>
+  „<b>20 %</b> haben A, <b>30 %</b> haben B, <b>5 %</b> haben beides.“<br><br>
+  Die dritte Zahl gehört ins <b>Innenfeld</b> A∩B, nicht in eine Randsumme.</div>
+  <p>Beim Deuten gilt: Ein Satz braucht immer die <b>Bezugsgruppe</b>. „80 %“ allein sagt nichts,
+  „80 % der Vereinsmitglieder“ schon.</p>`,
+  versionen:[
+  { name:"Haustier", frage:`In einer Stadt haben <b>30 %</b> der Haushalte ein Haustier (H) und
+      <b>45 %</b> einen Garten (G). <b>15 %</b> haben beides.`,
+    tafel:{ kopf:["","H","<ovl>H</ovl>","Summe"], zeilen:["G","<ovl>G</ovl>","Summe"],
+      werte:[["0,15","0,30","0,45"],["0,15","0,40","0,55"],["0,30","0,70","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>H</sub>(G)", soll:0.5},
+      {t:"zahl", l:"P<sub>G</sub>(H)", soll:1/3, hint:"gerundet 0,333"},
+      {t:"wahl", f:"Was bedeutet P(H ∩ <ovl>G</ovl>) = 0,15 im Sachkontext?",
+       opt:["15 % der Haushalte mit Haustier haben keinen Garten.",
+            "15 % aller Haushalte haben ein Haustier und keinen Garten.",
+            "15 % der Haushalte ohne Garten haben ein Haustier."], soll:1}
+    ],
+    loes:`<p>Tafel: H∩G = 0,15. H∩<ovl>G</ovl> = 0,30 − 0,15 = 0,15.
+      <ovl>H</ovl>∩G = 0,45 − 0,15 = 0,30. <ovl>H</ovl>∩<ovl>G</ovl> = 0,70 − 0,30 = 0,40.</p>
+      <p class="rech">P<sub>H</sub>(G) = ${fr("0,15","0,30")} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>G</sub>(H) = ${fr("0,15","0,45")} = ${fr(1,3)} ≈ <b>0,333</b></p>
+      <p>Bei einem Schnittereignis teilst du durch <b>1</b>, also gar nicht. Deshalb ist
+      P(H ∩ <ovl>G</ovl>) ein Anteil an <b>allen</b> Haushalten.</p>`},
+  { name:"Brille", frage:`An einer Schule tragen <b>20 %</b> eine Brille (B) und <b>60 %</b> kommen
+      mit dem Fahrrad (F). <b>10 %</b> trifft beides zu.`,
+    tafel:{ kopf:["","B","<ovl>B</ovl>","Summe"], zeilen:["F","<ovl>F</ovl>","Summe"],
+      werte:[["0,10","0,50","0,60"],["0,10","0,30","0,40"],["0,20","0,80","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>B</sub>(F)", soll:0.5},
+      {t:"zahl", l:"P<sub>F</sub>(B)", soll:1/6, hint:"gerundet 0,167"},
+      {t:"zahl", l:"P(<ovl>B</ovl> ∩ <ovl>F</ovl>)", soll:0.3}
+    ],
+    loes:`<p>Tafel: B∩F = 0,10. B∩<ovl>F</ovl> = 0,20 − 0,10 = 0,10.
+      <ovl>B</ovl>∩F = 0,60 − 0,10 = 0,50. <ovl>B</ovl>∩<ovl>F</ovl> = 0,80 − 0,50 = 0,30.</p>
+      <p class="rech">P<sub>B</sub>(F) = ${fr("0,10","0,20")} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>F</sub>(B) = ${fr("0,10","0,60")} ≈ <b>0,167</b> &nbsp;&nbsp;
+        P(<ovl>B</ovl> ∩ <ovl>F</ovl>) = <b>0,3</b></p>
+      <p>Die Hälfte der Brillenträger fährt Rad, aber nur ein Sechstel der Radfahrenden trägt Brille.
+      Die beiden bedingten Wahrscheinlichkeiten sind eben <b>nicht</b> dasselbe.</p>`},
+  { name:"Musik", frage:`<b>40 %</b> der Jugendlichen sind in einer Musik-AG (M), <b>25 %</b> singen
+      im Chor (C). <b>10 %</b> machen beides.`,
+    tafel:{ kopf:["","M","<ovl>M</ovl>","Summe"], zeilen:["C","<ovl>C</ovl>","Summe"],
+      werte:[["0,10","0,15","0,25"],["0,30","0,45","0,75"],["0,40","0,60","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>M</sub>(C)", soll:0.25},
+      {t:"zahl", l:"P<sub>C</sub>(M)", soll:0.4},
+      {t:"wahl", f:"Sind M und C stochastisch unabhängig?",
+       opt:["Ja, denn P(M ∩ C) = P(M) · P(C).",
+            "Nein, denn P<sub>M</sub>(C) ist größer als P(C).",
+            "Das lässt sich aus diesen Angaben nicht entscheiden."], soll:0}
+    ],
+    loes:`<p>Tafel: M∩C = 0,10. M∩<ovl>C</ovl> = 0,30. <ovl>M</ovl>∩C = 0,15.
+      <ovl>M</ovl>∩<ovl>C</ovl> = 0,45.</p>
+      <p class="rech">P<sub>M</sub>(C) = ${fr("0,10","0,40")} = <b>0,25</b> &nbsp;&nbsp;
+        P<sub>C</sub>(M) = ${fr("0,10","0,25")} = <b>0,4</b></p>
+      <p>Unabhängigkeit prüfen: P(M) · P(C) = 0,40 · 0,25 = <b>0,10</b>, und genau das ist
+      P(M ∩ C). Also sind die Ereignisse <b>unabhängig</b>.</p>
+      <p>Man sieht es auch so: P<sub>M</sub>(C) = 0,25 ist genauso groß wie P(C) = 0,25. Die
+      Bedingung ändert nichts.</p>`}
+  ]},
+
+/* ---------- 6 Tafel aus bedingten Wahrscheinlichkeiten ---------- */
+{ id:"bedingt", titel:"Tafel aus bedingten Angaben", kurz:"Zuordnen, multiplizieren, beurteilen",
+  erkl:`<p>Manchmal steht im Text gar kein Innenfeld, sondern nur eine Randwahrscheinlichkeit und
+  zwei bedingte Angaben. Dann rechnest du dich über die Pfadregel hinein.</p>
+  <div class="merke"><b>Vorgehen</b><br>
+  1. Angaben zuordnen: Welche ist P(A), welche P<sub>A</sub>(Z), welche P<sub><ovl>A</ovl></sub>(Z)?<br>
+  2. Innenfeld = Randwahrscheinlichkeit · bedingte Wahrscheinlichkeit.<br>
+  3. Rest über Summen ergänzen.</div>
+  <p>Vorsicht bei Formulierungen wie „von den Mitgliedern ohne Vertrag sind 80 % zufrieden“. Das ist
+  <b>nicht</b> P(Z), sondern P<sub><ovl>A</ovl></sub>(Z).</p>`,
+  versionen:[
+  { name:"Online-Shop", frage:`<b>30 %</b> der Bestellungen gehen per Express (E). Von den
+      Standard-Bestellungen sind <b>80 %</b> der Kundschaft zufrieden (Z). Bei Express sind
+      <b>50 %</b> unzufrieden. Im Vorjahr lag die Gesamtzufriedenheit bei <b>68 %</b>.`,
+    tafel:{ kopf:["","E","<ovl>E</ovl>","Summe"], zeilen:["Z","<ovl>Z</ovl>","Summe"],
+      werte:[["0,15","0,56","0,71"],["0,15","0,14","0,29"],["0,30","0,70","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z), also Gesamtzufriedenheit", soll:0.71},
+      {t:"wahl", f:"Hat sich die Zufriedenheit gegenüber dem Vorjahr verbessert?",
+       opt:["Ja, von 68 % auf 71 %.", "Nein, sie ist auf 50 % gefallen.",
+            "Das kann man nicht vergleichen."], soll:0}
+    ],
+    loes:`<p>Zuordnung: P(E) = 0,30, P<sub><ovl>E</ovl></sub>(Z) = 0,80,
+      P<sub>E</sub>(<ovl>Z</ovl>) = 0,50 und damit P<sub>E</sub>(Z) = 0,50.</p>
+      <p class="rech">P(E ∩ Z) = 0,30 · 0,50 = <b>0,15</b><br>
+        P(<ovl>E</ovl>) = 1 − 0,30 = 0,70<br>
+        P(<ovl>E</ovl> ∩ Z) = 0,70 · 0,80 = <b>0,56</b></p>
+      <p class="rech">P(Z) = 0,15 + 0,56 = <b>0,71</b></p>
+      <p>71 % liegen über den 68 % des Vorjahres, die Zufriedenheit ist also gestiegen. Wer nur auf
+      die schlechten Express-Zahlen schaut, übersieht, dass Express nur 30 % ausmacht.</p>`},
+  { name:"Kino", frage:`<b>25 %</b> der Gäste buchen einen Logenplatz (L). Von den übrigen Gästen
+      sind <b>60 %</b> zufrieden (Z). Von den Logengästen sind <b>20 %</b> unzufrieden. Das Kino
+      hatte sich <b>70 %</b> Gesamtzufriedenheit als Ziel gesetzt.`,
+    tafel:{ kopf:["","L","<ovl>L</ovl>","Summe"], zeilen:["Z","<ovl>Z</ovl>","Summe"],
+      werte:[["0,20","0,45","0,65"],["0,05","0,30","0,35"],["0,25","0,75","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z), also Gesamtzufriedenheit", soll:0.65},
+      {t:"wahl", f:"Wurde das Ziel von 70 % erreicht?",
+       opt:["Ja, mit 80 % sogar deutlich.", "Nein, es fehlen 5 Prozentpunkte.",
+            "Ja, genau getroffen."], soll:1}
+    ],
+    loes:`<p>Zuordnung: P(L) = 0,25, P<sub><ovl>L</ovl></sub>(Z) = 0,60,
+      P<sub>L</sub>(<ovl>Z</ovl>) = 0,20 und damit P<sub>L</sub>(Z) = 0,80.</p>
+      <p class="rech">P(L ∩ Z) = 0,25 · 0,80 = <b>0,20</b><br>
+        P(<ovl>L</ovl> ∩ Z) = 0,75 · 0,60 = <b>0,45</b></p>
+      <p class="rech">P(Z) = 0,20 + 0,45 = <b>0,65</b></p>
+      <p>Das Ziel von 70 % wurde um 5 Prozentpunkte verfehlt. Interessant: Die Logengäste sind mit
+      80 % am zufriedensten, aber sie sind nur ein Viertel aller Gäste.</p>`},
+  { name:"Busverkehr", frage:`<b>40 %</b> der Fahrgäste haben ein Abo (A). Von den Fahrgästen ohne
+      Abo sind <b>55 %</b> zufrieden (Z). Von den Abo-Kunden sind <b>30 %</b> unzufrieden. Im
+      Vorjahr waren <b>58 %</b> zufrieden.`,
+    tafel:{ kopf:["","A","<ovl>A</ovl>","Summe"], zeilen:["Z","<ovl>Z</ovl>","Summe"],
+      werte:[["0,28","0,33","0,61"],["0,12","0,27","0,39"],["0,40","0,60","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z), also Gesamtzufriedenheit", soll:0.61},
+      {t:"zahl", l:"P<sub>Z</sub>(A), also Anteil Abo unter den Zufriedenen", soll:0.28/0.61, hint:"gerundet 0,459"}
+    ],
+    loes:`<p>Zuordnung: P(A) = 0,40, P<sub><ovl>A</ovl></sub>(Z) = 0,55,
+      P<sub>A</sub>(<ovl>Z</ovl>) = 0,30 und damit P<sub>A</sub>(Z) = 0,70.</p>
+      <p class="rech">P(A ∩ Z) = 0,40 · 0,70 = <b>0,28</b><br>
+        P(<ovl>A</ovl> ∩ Z) = 0,60 · 0,55 = <b>0,33</b><br>
+        P(Z) = 0,28 + 0,33 = <b>0,61</b></p>
+      <p class="rech">P<sub>Z</sub>(A) = ${fr("0,28","0,61")} ≈ <b>0,459</b></p>
+      <p>Gegenüber 58 % im Vorjahr ist das eine Verbesserung. Die letzte Zahl dreht die Bedingung
+      um: Knapp 46 % der zufriedenen Fahrgäste haben ein Abo.</p>`}
+  ]},
+
+/* ---------- 7 Sensitivitaet und Spezifitaet ---------- */
+{ id:"test", titel:"Tests beurteilen", kurz:"Sensitivität, Spezifität, Umkehrung",
+  erkl:`<p>Bei Tests und Prüfgeräten gibt es zwei Gütemaße. Beide sind bedingte
+  Wahrscheinlichkeiten, nur mit verschiedenen Bedingungen.</p>
+  <div class="merke"><b>Die beiden Gütemaße</b><br>
+  <b>Sensitivität</b> = P<sub>betroffen</sub>(Test schlägt an)<br>
+  <b>Spezifität</b> = P<sub>nicht betroffen</sub>(Test schlägt nicht an)<br><br>
+  Beide teilen durch eine <b>Spaltensumme</b>, nicht durch die Gesamtzahl.</div>
+  <p>Die praktisch wichtigste Frage ist aber eine dritte: Wenn der Test anschlägt, wie wahrscheinlich
+  liegt dann wirklich etwas vor? Das ist die <b>Umkehrung</b>, und sie fällt oft überraschend
+  niedrig aus, weil die Gruppe der Nichtbetroffenen viel größer ist.</p>`,
+  versionen:[
+  { name:"Allergietest", frage:`<b>600 Personen</b> werden getestet. <b>60</b> haben tatsächlich eine
+      Allergie. Bei <b>54</b> von ihnen schlägt der Test an. Von den <b>540</b> ohne Allergie schlägt
+      er bei <b>27</b> fälschlich an.`,
+    tafel:{ kopf:["","Allergie","keine Allergie","Summe"], zeilen:["Test +","Test −","Summe"],
+      werte:[[54,27,81],[6,513,519],[60,540,600]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"Sensitivität", soll:0.9},
+      {t:"zahl", l:"Spezifität", soll:0.95},
+      {t:"zahl", l:"P(Allergie, wenn Test positiv)", soll:2/3, hint:"gerundet 0,667"}
+    ],
+    loes:`<p class="rech">Sensitivität = ${fr(54,60)} = <b>0,90 = 90 %</b></p>
+      <p class="rech">Spezifität = ${fr(513,540)} = <b>0,95 = 95 %</b></p>
+      <p class="rech">P<sub>Test +</sub>(Allergie) = ${fr(54,81)} = ${fr(2,3)} ≈ <b>0,667</b></p>
+      <p>Obwohl der Test sehr gut ist, stimmt nur jedes dritte positive Ergebnis nicht. Ein Drittel
+      der Alarme ist falsch, weil es neunmal so viele Gesunde wie Allergiker gibt.</p>`},
+  { name:"Rauchmelder", frage:`In <b>1000 Prüfungen</b> gab es <b>50-mal</b> echten Rauch. Der Melder
+      reagierte dabei <b>48-mal</b>. In den <b>950</b> Fällen ohne Rauch gab er <b>38-mal</b>
+      Fehlalarm.`,
+    tafel:{ kopf:["","Rauch","kein Rauch","Summe"], zeilen:["Alarm","kein Alarm","Summe"],
+      werte:[[48,38,86],[2,912,914],[50,950,1000]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"Sensitivität", soll:0.96},
+      {t:"zahl", l:"Spezifität", soll:0.96},
+      {t:"zahl", l:"P(Rauch, wenn Alarm)", soll:48/86, hint:"gerundet 0,558"}
+    ],
+    loes:`<p class="rech">Sensitivität = ${fr(48,50)} = <b>0,96</b> &nbsp;&nbsp;
+        Spezifität = ${fr(912,950)} = <b>0,96</b></p>
+      <p class="rech">P<sub>Alarm</sub>(Rauch) = ${fr(48,86)} ≈ <b>0,558</b></p>
+      <p>Beide Gütemaße liegen bei 96 %, und trotzdem ist fast jeder zweite Alarm ein Fehlalarm.
+      Grund: Es gibt 19-mal so viele rauchfreie Situationen. Die 4 % Fehlalarme dort ergeben absolut
+      38 Fälle gegenüber nur 48 echten.</p>`},
+  { name:"Obstsortierung", frage:`Eine Maschine prüft <b>800 Äpfel</b>. <b>40</b> davon sind faul.
+      Die Maschine erkennt <b>36</b> der faulen Äpfel. Von den <b>760</b> guten Äpfeln sortiert sie
+      <b>38</b> fälschlich aus.`,
+    tafel:{ kopf:["","faul","gut","Summe"], zeilen:["aussortiert","durchgelassen","Summe"],
+      werte:[[36,38,74],[4,722,726],[40,760,800]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"Sensitivität", soll:0.9},
+      {t:"zahl", l:"Spezifität", soll:0.95},
+      {t:"zahl", l:"P(faul, wenn aussortiert)", soll:36/74, hint:"gerundet 0,486"}
+    ],
+    loes:`<p class="rech">Sensitivität = ${fr(36,40)} = <b>0,90</b> &nbsp;&nbsp;
+        Spezifität = ${fr(722,760)} = <b>0,95</b></p>
+      <p class="rech">P<sub>aussortiert</sub>(faul) = ${fr(36,74)} ≈ <b>0,486</b></p>
+      <p>Weniger als die Hälfte der aussortierten Äpfel ist wirklich faul. Für den Betrieb heißt das:
+      Von 74 aussortierten Äpfeln wären 38 noch verkäuflich gewesen. Hier lohnt sich eine
+      Nachkontrolle von Hand.</p>`}
+  ]}
+];
+
+/* ============================================================
+   App
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const KEY = "m10-training";
+const store = { ok:true,
+  get(k,d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ this.ok=false; return d; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ this.ok=false; } } };
+let geloest = {};
+try{ geloest = JSON.parse(store.get(KEY,"{}")) || {}; }catch(e){ geloest = {}; }
+let akt = 0, aktV = 0;
+
+/* Eingaben tolerant lesen: 0,75 oder 75% oder 3/4 */
+function zahl(s){
+  if(s==null) return null;
+  s = String(s).trim().replace(",",".").replace(/\s/g,"");
+  if(!s) return null;
+  if(s.endsWith("%")){ const v=parseFloat(s.slice(0,-1)); return isFinite(v)? v/100 : null; }
+  if(s.includes("/")){ const [a,b]=s.split("/").map(parseFloat);
+    return (isFinite(a)&&isFinite(b)&&b!==0) ? a/b : null; }
+  const v = parseFloat(s);
+  return isFinite(v) ? v : null;
+}
+/* Prozent und Dezimal beide zulassen, wenn der Sollwert hoechstens 1 ist */
+function stimmt(ein, soll){
+  const v = zahl(ein); if(v===null) return false;
+  const tol = Math.max(0.0015, Math.abs(soll)*0.002);
+  if(Math.abs(v-soll) <= tol) return true;
+  if(soll<=1 && Math.abs(v/100-soll) <= tol) return true;   // 75 statt 0,75
+  return false;
+}
+const schl = (t,v) => t+"#"+v;
+
+function navBauen(){
+  $("nav").innerHTML = THEMEN.map((t,i)=>{
+    const d = t.versionen.map((_,j)=> geloest[schl(t.id,j)] ? '<i class="done"></i>' : '<i></i>').join("");
+    return `<a class="th" data-i="${i}"><span class="num">${i+1}</span>
+      <span class="ttl">${t.titel}</span><span class="dots">${d}</span></a>`;
+  }).join("");
+  $("nav").querySelectorAll("a.th").forEach(a =>
+    a.addEventListener("click", ()=>{ zeige(+a.dataset.i, 0); document.body.classList.remove("nav-open"); }));
+  const ges = THEMEN.reduce((s,t)=>s+t.versionen.length,0);
+  const c = Object.keys(geloest).length;
+  $("#prog .bar i") || null;
+  document.querySelector("#prog .bar i").style.width = (100*c/ges)+"%";
+  document.querySelector("#prog .txt").textContent = `${c} von ${ges} Aufgaben gelöst`;
+}
+
+function felderHTML(v){
+  return v.felder.map((f,k)=>{
+    if(f.t==="wahl"){
+      return `<div class="frage" style="margin-top:14px">${f.f}</div>
+        <div class="wahl" data-k="${k}">${f.opt.map((o,m)=>
+          `<label data-m="${m}"><input type="radio" name="w${k}" value="${m}"><span>${o}</span></label>`).join("")}</div>`;
+    }
+    return `<div class="feld" data-k="${k}">
+      <span class="fl">${f.l}</span>
+      <input type="text" inputmode="decimal" autocomplete="off">
+      <span class="mark"></span>
+      <span class="hint">${f.hint||""}</span></div>`;
+  }).join("");
+}
+
+function tafelHTML(t){
+  let s = `<table class="vf"><tr>${t.kopf.map((k,i)=>
+    `<th class="${i?'ev':''}">${k}</th>`).join("")}</tr>`;
+  t.zeilen.forEach((zl,r)=>{
+    s += `<tr><th class="ev">${zl}</th>` + t.werte[r].map((w,c)=>
+      t.geg[r][c] ? `<td class="geg">${w}</td>`
+                  : `<td data-r="${r}" data-c="${c}"><input type="text" inputmode="decimal" autocomplete="off"></td>`
+    ).join("") + `</tr>`;
+  });
+  return s + `</table>`;
+}
+
+function zeige(i, v){
+  akt = i; aktV = v;
+  const t = THEMEN[i], ver = t.versionen[v];
+  document.querySelectorAll("a.th").forEach(a=>a.classList.toggle("on", +a.dataset.i===i));
+  $("crumb").textContent = `Thema ${i+1} von ${THEMEN.length} · ${t.titel}`;
+
+  $("main").innerHTML = `
+    <div class="hd">
+      <div class="kicker">Thema ${i+1}</div>
+      <h2>${t.titel}</h2>
+      <div class="sub">${t.kurz}</div>
+    </div>
+    <div class="card erkl"><h3>Das brauchst du</h3>${t.erkl}</div>
+
+    <div class="vers ui"><span class="lbl">Version:</span>${
+      t.versionen.map((x,j)=>`<button class="v ${j===v?"on":""}" data-v="${j}">${x.name}${
+        geloest[schl(t.id,j)]?'<span class="ok">✓</span>':''}</button>`).join("")}</div>
+
+    <div class="card">
+      <h3>Aufgabe</h3>
+      <div class="frage">${ver.frage}</div>
+      ${ver.grafik ? `<div class="grafikbox">${ver.grafik()}</div>` : ""}
+      ${ver.tafel ? `<p class="ui" style="font-size:.88rem;color:var(--muted);margin-bottom:4px">
+          Fülle zuerst die grauen Lücken der Tafel aus.</p>${tafelHTML(ver.tafel)}` : ""}
+      ${felderHTML(ver)}
+      <div class="btnrow ui">
+        <button class="act pri" id="pruefen">Prüfen</button>
+        <button class="act" id="leeren">Leeren</button>
+      </div>
+      <div class="fb" id="fb"></div>
+      <details class="loes"><summary>Lösungsweg anzeigen</summary>
+        <div class="loesbox">${ver.loes}</div></details>
+    </div>`;
+
+  document.querySelectorAll("button.v").forEach(b=>
+    b.addEventListener("click", ()=> zeige(i, +b.dataset.v)));
+  $("pruefen").addEventListener("click", pruefen);
+  $("leeren").addEventListener("click", ()=> zeige(i, v));
+  $("prev").disabled = (i===0); $("next").disabled = (i===THEMEN.length-1);
+  window.scrollTo({top:0, behavior:"instant"});
+  katexen();
+}
+
+function pruefen(){
+  const t = THEMEN[akt], ver = t.versionen[aktV];
+  let richtig = 0, gesamt = 0;
+
+  if(ver.tafel){
+    document.querySelectorAll("table.vf td[data-r]").forEach(td=>{
+      const r=+td.dataset.r, c=+td.dataset.c, inp=td.querySelector("input");
+      const soll = zahl(String(ver.tafel.werte[r][c]));
+      gesamt++;
+      const ok = stimmt(inp.value, soll);
+      td.classList.toggle("r", ok); td.classList.toggle("f", !ok && inp.value.trim()!=="");
+      if(ok) richtig++;
+    });
+  }
+  ver.felder.forEach((f,k)=>{
+    gesamt++;
+    if(f.t==="wahl"){
+      const box = document.querySelector(`.wahl[data-k="${k}"]`);
+      const sel = box.querySelector("input:checked");
+      box.querySelectorAll("label").forEach(l=>l.classList.remove("r","f"));
+      if(sel){
+        const m = +sel.value;
+        const lab = box.querySelector(`label[data-m="${m}"]`);
+        if(m===f.soll){ lab.classList.add("r"); richtig++; }
+        else{ lab.classList.add("f");
+              box.querySelector(`label[data-m="${f.soll}"]`).classList.add("r"); }
+      }
+    } else {
+      const d = document.querySelector(`.feld[data-k="${k}"]`);
+      const inp = d.querySelector("input"), mk = d.querySelector(".mark");
+      const ok = stimmt(inp.value, f.soll);
+      inp.classList.toggle("r", ok); inp.classList.toggle("f", !ok && inp.value.trim()!=="");
+      mk.textContent = ok ? "✓" : (inp.value.trim() ? "✗" : "");
+      mk.style.color = ok ? "var(--ok)" : "var(--bad)";
+      if(ok) richtig++;
+    }
+  });
+
+  const fb = $("fb"); fb.className = "fb show";
+  if(richtig===gesamt){
+    fb.classList.add("gut");
+    fb.innerHTML = `<b>Alles richtig.</b> ${gesamt} von ${gesamt} Angaben stimmen.
+      Schau dir trotzdem kurz den Lösungsweg an, dort steht, worauf es bei dieser Aufgabe ankommt.`;
+    geloest[schl(t.id,aktV)] = 1;
+    store.set(KEY, JSON.stringify(geloest));
+    navBauen();
+    document.querySelectorAll("button.v").forEach((b,j)=>{
+      if(j===aktV && !b.querySelector(".ok")) b.insertAdjacentHTML("beforeend",'<span class="ok">✓</span>');
+    });
+  } else if(richtig >= gesamt/2){
+    fb.classList.add("teil");
+    fb.innerHTML = `<b>${richtig} von ${gesamt} stimmen.</b> Die rot markierten Stellen passen noch
+      nicht. Tipp: Prüfe bei den bedingten Wahrscheinlichkeiten, durch welche Zahl du geteilt hast.`;
+  } else {
+    fb.classList.add("schlecht");
+    fb.innerHTML = `<b>${richtig} von ${gesamt} stimmen.</b> Das passt noch nicht. Lies die Box
+      „Das brauchst du“ oben noch einmal und öffne danach den Lösungsweg.`;
+  }
+  katexen();
+}
+
+function katexen(){
+  if(window.renderMathInElement){
+    renderMathInElement($("main"), {
+      delimiters:[{left:"\\(",right:"\\)",display:false},{left:"$$",right:"$$",display:true}],
+      throwOnError:false });
+  }
+}
+
+$("prev").addEventListener("click", ()=>{ if(akt>0) zeige(akt-1,0); });
+$("next").addEventListener("click", ()=>{ if(akt<THEMEN.length-1) zeige(akt+1,0); });
+$("menuBtn").addEventListener("click", ()=> document.body.classList.toggle("nav-open"));
+$("scrim").addEventListener("click", ()=> document.body.classList.remove("nav-open"));
+$("reset").addEventListener("click", ()=>{
+  if(!confirm("Alle Häkchen zurücksetzen?")) return;
+  geloest = {}; store.set(KEY,"{}"); navBauen(); zeige(akt,aktV);
+});
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  navBauen(); zeige(0,0);
+  if(!store.ok){
+    const w=document.createElement("div"); w.className="ui";
+    w.style.cssText="background:#fdf6e8;border-bottom:1px solid #efd9a8;padding:9px 26px;font-size:.84rem";
+    w.textContent="Dieser Browser erlaubt kein Speichern. Dein Fortschritt geht beim Schließen verloren, sonst funktioniert alles.";
+    $("wrap").prepend(w);
+  }
+});
+</script>
+
+</body>
+</html>
