@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机统计训练 · 十年级</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f4f1ea; --surface:#ffffff; --ink:#22201c; --muted:#6b665d;
+    --line:#e3ddd0; --accent:#3a5a78; --accent-soft:#e8eef4; --paper:#faf8f3;
+    --ok:#2e8b57; --bad:#c0392b; --warn:#c9821a;
+    --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05);
+    --sidebar:290px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,"Songti SC","PingFang SC","Microsoft YaHei",serif;
+    font-size:17px; line-height:1.6;
+  }
+  .ui{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif}
+
+  /* ---------- Sidebar ---------- */
+  #side{
+    position:fixed; top:0; left:0; bottom:0; width:var(--sidebar);
+    background:var(--surface); border-right:1px solid var(--line);
+    overflow-y:auto; z-index:30;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  #side .brand{padding:18px 18px 13px; border-bottom:1px solid var(--line)}
+  #side .brand h1{margin:0; font-size:1.02rem}
+  #side .brand p{margin:3px 0 0; font-size:.78rem; color:var(--muted)}
+  #prog{margin-top:12px}
+  #prog .bar{height:5px; background:var(--line); border-radius:3px; overflow:hidden}
+  #prog .bar i{display:block; height:100%; background:var(--ok); width:0; transition:width .3s}
+  #prog .txt{font-size:.74rem; color:var(--muted); margin-top:5px}
+
+  a.th{
+    display:flex; gap:9px; align-items:baseline; padding:9px 16px 9px 18px;
+    text-decoration:none; color:var(--ink); font-size:.86rem; cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  a.th:hover{background:var(--paper)}
+  a.th.on{background:var(--accent-soft); border-left-color:var(--accent); font-weight:600}
+  a.th .num{flex:0 0 20px; color:var(--muted); font-size:.78rem; font-variant-numeric:tabular-nums}
+  a.th.on .num{color:var(--accent)}
+  a.th .ttl{flex:1; line-height:1.35}
+  a.th .dots{flex:0 0 auto; display:flex; gap:3px; margin-top:6px}
+  a.th .dots i{width:7px; height:7px; border-radius:50%; background:transparent;
+               border:1.4px solid var(--line); display:block}
+  a.th .dots i.done{background:var(--ok); border-color:var(--ok)}
+
+  /* ---------- Inhalt ---------- */
+  #wrap{margin-left:var(--sidebar); padding:0 0 90px}
+  .topbar{
+    position:sticky; top:0; z-index:20; background:rgba(244,241,234,.93);
+    backdrop-filter:blur(9px); border-bottom:1px solid var(--line);
+    padding:11px 26px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  }
+  .topbar .meta{font-size:.8rem; color:var(--muted); font-family:-apple-system,sans-serif}
+  .topbar .sp{flex:1}
+  #menuBtn{display:none}
+  main{max-width:900px; margin:0 auto; padding:24px 26px 0}
+
+  .hd{margin-bottom:18px}
+  .hd .kicker{font-family:-apple-system,sans-serif; font-size:.75rem; text-transform:uppercase;
+              letter-spacing:1px; color:var(--accent); font-weight:600}
+  .hd h2{margin:5px 0 4px; font-size:1.6rem; line-height:1.22}
+  .hd .sub{color:var(--muted); font-size:.93rem}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+        box-shadow:var(--shadow); padding:20px 22px; margin-bottom:18px}
+  .card > h3{font-family:-apple-system,sans-serif; font-size:.75rem; text-transform:uppercase;
+             letter-spacing:1px; color:var(--muted); margin:0 0 12px; font-weight:600}
+
+  .erkl{background:var(--paper)}
+  .erkl p{margin:0 0 9px}
+  .erkl p:last-child{margin-bottom:0}
+  .merke{background:#2a3f4f; color:#f2efe6; border-radius:10px; padding:14px 18px;
+         margin:12px 0 4px; font-size:.97rem; line-height:1.75}
+  .merke b{color:#ffd98a}
+  .merke .katex{color:#f2efe6}
+
+  /* Versionen */
+  .vers{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; align-items:center}
+  .vers .lbl{font-family:-apple-system,sans-serif; font-size:.8rem; color:var(--muted); margin-right:4px}
+  button.v{font-family:-apple-system,sans-serif; font-size:.85rem; padding:7px 15px; cursor:pointer;
+           background:var(--surface); border:1px solid var(--line); border-radius:9px;
+           color:var(--ink); transition:.15s}
+  button.v:hover{background:var(--accent-soft); border-color:var(--accent)}
+  button.v.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  button.v .ok{color:var(--ok); font-weight:700; margin-left:5px}
+  button.v.on .ok{color:#cdebd8}
+
+  .frage{font-size:1.02rem; margin-bottom:14px}
+  .frage b{font-weight:600}
+
+  /* Eingabefelder */
+  .feld{display:flex; gap:11px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+  .feld .fl{flex:0 0 auto; min-width:150px; font-size:.98rem}
+  .feld input[type=text]{
+    width:112px; padding:8px 11px; border:1px solid var(--line); border-radius:9px;
+    font-family:inherit; font-size:1rem; background:var(--paper); color:var(--ink);
+  }
+  .feld input:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+  .feld input.r{border-color:var(--ok); background:#eaf5ee}
+  .feld input.f{border-color:var(--bad); background:#fdeeec}
+  .feld .hint{font-size:.82rem; color:var(--muted); font-family:-apple-system,sans-serif}
+  .feld .mark{font-size:1.1rem; width:20px}
+
+  /* Vierfeldertafel zum Ausfuellen */
+  table.vf{border-collapse:collapse; margin:4px 0 14px; font-size:.97rem}
+  table.vf th, table.vf td{border:1px solid var(--line); padding:0; text-align:center; min-width:86px}
+  table.vf th{background:var(--paper); font-family:-apple-system,sans-serif; font-size:.84rem;
+              font-weight:600; padding:8px 10px; color:var(--muted)}
+  table.vf th.ev{color:var(--ink)}
+  table.vf td.geg{background:#f0ece2; font-weight:600; padding:9px 10px}
+  table.vf input{width:100%; border:none; background:transparent; text-align:center;
+                 font-family:inherit; font-size:1rem; padding:9px 4px; color:var(--ink); outline:none}
+  table.vf input:focus{background:var(--accent-soft)}
+  table.vf td.r input{background:#eaf5ee; color:var(--ok); font-weight:600}
+  table.vf td.f input{background:#fdeeec; color:var(--bad)}
+
+  /* Auswahlfragen */
+  .wahl{display:flex; flex-direction:column; gap:7px; margin-bottom:12px}
+  .wahl label{display:flex; gap:9px; align-items:flex-start; padding:9px 13px;
+              border:1px solid var(--line); border-radius:10px; cursor:pointer;
+              background:var(--paper); font-size:.97rem}
+  .wahl label:hover{border-color:var(--accent)}
+  .wahl label.r{border-color:var(--ok); background:#eaf5ee}
+  .wahl label.f{border-color:var(--bad); background:#fdeeec}
+  .wahl input{margin-top:5px}
+
+  .btnrow{display:flex; gap:9px; flex-wrap:wrap; margin-top:14px}
+  button.act{font-family:-apple-system,sans-serif; font-size:.87rem; padding:9px 17px; cursor:pointer;
+             background:var(--paper); border:1px solid var(--line); border-radius:9px;
+             color:var(--ink); transition:.15s}
+  button.act:hover{background:var(--accent-soft); border-color:var(--accent)}
+  button.act.pri{background:var(--accent); color:#fff; border-color:var(--accent)}
+  button.act.pri:hover{opacity:.9}
+
+  .fb{padding:12px 16px; border-radius:10px; margin-top:14px; font-size:.97rem; display:none}
+  .fb.show{display:block}
+  .fb.gut{background:#eaf5ee; border:1px solid #bcdcc8}
+  .fb.teil{background:#fdf6e8; border:1px solid #efd9a8}
+  .fb.schlecht{background:#fdeeec; border:1px solid #f0c8c2}
+
+  details.loes{margin-top:14px}
+  details.loes summary{cursor:pointer; color:var(--accent); font-family:-apple-system,sans-serif;
+                       font-size:.88rem; padding:7px 0}
+  .loesbox{background:var(--paper); border:1px solid var(--line); border-radius:10px;
+           padding:14px 18px; font-size:.97rem}
+  .loesbox p{margin:0 0 9px}
+  .loesbox p:last-child{margin-bottom:0}
+  .rech{font-family:Cambria,Georgia,serif}
+
+  /* Brueche */
+  fr{display:inline-block; vertical-align:-0.46em; text-align:center; margin:0 .16em; line-height:1.12}
+  fz{display:block; padding:0 .22em}
+  fn{display:block; padding:0 .22em; border-top:1px solid currentColor}
+
+  .grafikbox{border:1px solid var(--line); border-radius:10px; padding:12px; background:#fff;
+             margin:10px 0 14px}
+  .grafikbox svg{width:100%; height:auto; display:block; max-height:300px}
+  ovl{text-decoration:overline}
+
+  #scrim{display:none; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:29}
+  @media(max-width:900px){
+    #side{transform:translateX(-100%); transition:transform .22s; box-shadow:var(--shadow)}
+    body.nav-open #side{transform:none}
+    body.nav-open #scrim{display:block}
+    #wrap{margin-left:0}
+    #menuBtn{display:inline-block}
+    main{padding:18px 15px 0}
+  }
+</style>
+</head>
+<body>
+
+<nav id="side">
+  <div class="brand">
+    <h1>随机统计训练</h1>
+    <p>十年级 · 第一次数学测验备考</p>
+    <p style="margin-top:6px">德国写法：小数点是逗号，例如 0,6 就是 0.6。填空时两种写法都可以。</p>
+    <p style="margin-top:7px"><a href="../" style="color:var(--accent)">Deutsche Fassung · 德语原版</a></p>
+    <div id="prog"><div class="bar"><i></i></div><div class="txt"></div></div>
+  </div>
+  <div id="nav"></div>
+  <div style="padding:16px 18px 26px">
+    <button class="act" id="reset" style="width:100%">清除练习进度</button>
+  </div>
+</nav>
+<div id="scrim"></div>
+
+<div id="wrap">
+  <div class="topbar">
+    <button class="act" id="menuBtn">☰ 主题</button>
+    <span class="meta" id="crumb"></span>
+    <span class="sp"></span>
+    <button class="act" id="prev">← 上一个</button>
+    <button class="act" id="next">下一个 →</button>
+  </div>
+  <main id="main"></main><!-- rechtliches --><style>.erik-recht{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center;padding:18px 12px 22px;opacity:.75}.erik-recht a{color:inherit}@media print{.erik-recht{display:none}}</style><footer class="erik-recht"><a href="https://erikdahlmann.github.io/impressum.html">Impressum</a> · <a href="https://erikdahlmann.github.io/datenschutz.html">Datenschutz</a></footer><!-- /rechtliches -->
+</div>
+
+<script>
+/* ============================================================
+   Hilfsfunktionen fuer Brueche und Grafiken
+   ============================================================ */
+const fr = (z,n) => `<fr><fz>${z}</fz><fn>${n}</fn></fr>`;
+const ovl = s => `<ovl>${s}</ovl>`;
+
+/* Balkendiagramm; wenn quadratisch=true waechst auch die Breite mit (Flaechentrick) */
+function balken({titel, labels, werte, yMin, yMax, ticks, einheit, quadratisch, farben}){
+  const W=620, H=300, L=56, R=16, T=26, B=46;
+  const px=L, py=T, pw=W-L-R, ph=H-T-B;
+  const y=v=>py+ph-(v-yMin)/(yMax-yMin)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,'PingFang SC','Microsoft YaHei',sans-serif">`;
+  s+=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  s+=`<text x="${W/2}" y="15" text-anchor="middle" font-size="13" font-weight="700" fill="#22201c">${titel}</text>`;
+  ticks.forEach(t=>{ const yy=y(t);
+    s+=`<line x1="${px}" y1="${yy}" x2="${px+pw}" y2="${yy}" stroke="#eceadf"/>`;
+    s+=`<text x="${px-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#6b665d">${String(t).replace(".",",")}${einheit||""}</text>`; });
+  s+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<line x1="${px}" y1="${py+ph}" x2="${px+pw}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  if(quadratisch){
+    const hs=werte.map(v=>(v-yMin)/(yMax-yMin)*ph), lu=10;
+    const gesamt=hs.reduce((a,b)=>a+b,0)+lu*(werte.length-1);
+    let x=px+(pw-gesamt)/2;
+    werte.forEach((v,i)=>{ const h=hs[i];
+      s+=`<rect x="${x}" y="${py+ph-h}" width="${h}" height="${h}" fill="${(farben&&farben[i])||"#1f3a5f"}" rx="3"/>`;
+      s+=`<text x="${x+h/2}" y="${py+ph+16}" text-anchor="middle" font-size="11" fill="#22201c">${labels[i]}</text>`;
+      s+=`<text x="${x+h/2}" y="${py+ph+30}" text-anchor="middle" font-size="10.5" fill="#6b665d">${String(v).replace(".",",")}${einheit||""}</text>`;
+      x+=h+lu; });
+  } else {
+    const gap=pw/werte.length, bw=gap*0.5;
+    werte.forEach((v,i)=>{ const cx=px+gap*i+gap/2, top=y(v), h=py+ph-top;
+      s+=`<rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${Math.max(h,0)}" fill="${(farben&&farben[i])||"#1f3a5f"}" rx="2"/>`;
+      s+=`<text x="${cx}" y="${top-7}" text-anchor="middle" font-size="12" font-weight="600" fill="#22201c">${String(v).replace(".",",")}${einheit||""}</text>`;
+      s+=`<text x="${cx}" y="${py+ph+18}" text-anchor="middle" font-size="11.5" fill="#22201c">${labels[i]}</text>`; });
+  }
+  return s+`</svg>`;
+}
+
+function linie({titel, labels, werte, yMin, yMax, ticks, farbe}){
+  const W=620, H=290, L=56, R=16, T=26, B=42;
+  const px=L, py=T, pw=W-L-R, ph=H-T-B, n=werte.length;
+  const x=i=> n===1?px+pw/2 : px+i*(pw/(n-1));
+  const y=v=>py+ph-(v-yMin)/(yMax-yMin)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,'PingFang SC','Microsoft YaHei',sans-serif">`;
+  s+=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  s+=`<text x="${W/2}" y="15" text-anchor="middle" font-size="13" font-weight="700" fill="#22201c">${titel}</text>`;
+  ticks.forEach(t=>{ const yy=y(t);
+    s+=`<line x1="${px}" y1="${yy}" x2="${px+pw}" y2="${yy}" stroke="#eceadf"/>`;
+    s+=`<text x="${px-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#6b665d">${t}</text>`; });
+  s+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<line x1="${px}" y1="${py+ph}" x2="${px+pw}" y2="${py+ph}" stroke="#c8c2b4" stroke-width="1.3"/>`;
+  s+=`<polyline points="${werte.map((v,i)=>x(i)+","+y(v)).join(" ")}" fill="none" stroke="${farbe||"#3a5a78"}" stroke-width="2.6" stroke-linejoin="round"/>`;
+  werte.forEach((v,i)=>{
+    const anc = i===0?"start":(i===n-1?"end":"middle");
+    const lx  = i===0?x(i)+3:(i===n-1?x(i)-3:x(i));
+    s+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="${farbe||"#3a5a78"}"/>`;
+    s+=`<text x="${lx}" y="${y(v)-11}" text-anchor="${anc}" font-size="11" fill="#22201c">${v}</text>`;
+    s+=`<text x="${x(i)}" y="${py+ph+18}" text-anchor="middle" font-size="11" fill="#22201c">${labels[i]}</text>`; });
+  return s+`</svg>`;
+}
+</script>
+<script>
+/* ============================================================
+   Aufgaben. Jedes Thema hat bis zu drei Versionen.
+   Feldtypen:  zahl | tafel | wahl
+   ============================================================ */
+const THEMEN = [
+
+/* ---------- 1 Mehrstufige Baeume ---------- */
+{ id:"baum", titel:"多级树状图", kurz:"路径法则、不放回抽取",
+  erkl:`<p><b>不放回</b>抽取时，每一级的概率都会改变，因为有利情形和总数同时变小。</p>
+  <p>沿着一条路径要<b>相乘</b>（第一路径法则）。属于同一个事件的几条路径要<b>相加</b>（第二路径法则）。</p>
+  <div class="merke"><b>「至少」类题目</b><br>
+  「至少两个」的意思是：正好两个<b>或者</b>三个。把所有符合的路径加起来。<br>
+  绕道对立事件常常更快：P(至少 1 个) = 1 − P(一个都没有)。</div>`,
+  versionen:[
+  { name:"小球", frage:`碗里有 <b>5 个球</b>：<b>2 个红球</b>和 <b>3 个蓝球</b>。
+      你<b>不放回地连续取出两个球</b>。`,
+    felder:[
+      {t:"zahl", l:"P(两个都是红球)", soll:0.1, hint:"0,1 或 10 %"},
+      {t:"zahl", l:"P(正好一个红球)", soll:0.6},
+      {t:"zahl", l:"P(至少一个红球)", soll:0.7}
+    ],
+    loes:`<p><b>树状图：</b>第一级 红 ${fr(2,5)}，蓝 ${fr(3,5)}。取走一个红球后还剩
+      ${fr(1,4)} 红和 ${fr(3,4)} 蓝；取走一个蓝球后是 ${fr(2,4)} 红和 ${fr(2,4)} 蓝。</p>
+      <p class="rech">P(红红) = ${fr(2,5)} · ${fr(1,4)} = ${fr(2,20)} = <b>0,1</b></p>
+      <p class="rech">P(正好一个红球) = ${fr(2,5)} · ${fr(3,4)} + ${fr(3,5)} · ${fr(2,4)}
+        = ${fr(6,20)} + ${fr(6,20)} = ${fr(12,20)} = <b>0,6</b></p>
+      <p class="rech">P(至少一个红球) = 1 − P(蓝蓝) = 1 − ${fr(3,5)} · ${fr(2,4)}
+        = 1 − ${fr(6,20)} = <b>0,7</b></p>
+      <p>这里走对立事件，比把三条路径加起来明显更短。</p>`},
+  { name:"卡牌", frage:`一摞牌有 <b>6 张</b>，其中 <b>4 张带星</b>，<b>2 张不带星</b>。
+      你<b>不放回地取出三张牌</b>。`,
+    felder:[
+      {t:"zahl", l:"P(三张都带星)", soll:0.2},
+      {t:"zahl", l:"P(至少两张带星)", soll:0.8}
+    ],
+    loes:`<p class="rech">P(星星星) = ${fr(4,6)} · ${fr(3,5)} · ${fr(2,4)} = ${fr(24,120)} = <b>0,2</b></p>
+      <p>求「至少两张」时，还要加上正好两张带星的三条路径：</p>
+      <p class="rech">星星无 = ${fr(4,6)} · ${fr(3,5)} · ${fr(2,4)} = ${fr(24,120)}<br>
+         星无星 = ${fr(4,6)} · ${fr(2,5)} · ${fr(3,4)} = ${fr(24,120)}<br>
+         无星星 = ${fr(2,6)} · ${fr(4,5)} · ${fr(3,4)} = ${fr(24,120)}</p>
+      <p class="rech">P(至少 2 张) = ${fr(24,120)} + 3 · ${fr(24,120)} = ${fr(96,120)} = <b>0,8</b></p>`},
+  { name:"袜子", frage:`抽屉里有 <b>10 只袜子</b>：<b>6 只黑色</b>和 <b>4 只蓝色</b>。
+      你在黑暗中摸出<b>两只</b>。`,
+    felder:[
+      {t:"zahl", l:"P(两只都是黑色)", soll:1/3, hint:"约 0,333"},
+      {t:"zahl", l:"P(两只同色)", soll:7/15, hint:"约 0,467"},
+      {t:"zahl", l:"P(两只不同色)", soll:8/15, hint:"约 0,533"}
+    ],
+    loes:`<p class="rech">P(黑黑) = ${fr(6,10)} · ${fr(5,9)} = ${fr(30,90)} = ${fr(1,3)} ≈ <b>0,333</b></p>
+      <p class="rech">P(蓝蓝) = ${fr(4,10)} · ${fr(3,9)} = ${fr(12,90)} = ${fr(2,15)}</p>
+      <p class="rech">P(同色) = ${fr(1,3)} + ${fr(2,15)} = ${fr(5,15)} + ${fr(2,15)}
+        = ${fr(7,15)} ≈ <b>0,467</b></p>
+      <p class="rech">P(不同色) = 1 − ${fr(7,15)} = ${fr(8,15)} ≈ <b>0,533</b></p>
+      <p>这里的数除不尽。写成分数，或者保留三位小数。</p>`}
+  ]},
+
+/* ---------- 2 Grafiken beurteilen ---------- */
+{ id:"grafik", titel:"评判统计图", kurz:"检查并评价图示",
+  erkl:`<p>一张统计图即使<b>数字完全正确</b>，也可能骗人。有三种手法反复出现。</p>
+  <div class="merke"><b>看每张图都要问的五个问题</b><br>
+  1. y 轴从哪里开始？<br>
+  2. 我比较的是长度还是面积？<br>
+  3. 用的是绝对数量还是比例？<br>
+  4. 取了哪段时间，为什么偏偏是这一段？<br>
+  5. 这张图是谁做的，为了什么？</div>
+  <p>关于面积手法：如果一个图形的高<b>和</b>宽都按系数 k 变大，那么面积按 <b>k²</b> 变大。
+  这和位似变换完全一样。</p>`,
+  versionen:[
+  { name:"V1", frage:`一则广告比较三家分店的年营业额。`,
+    grafik:()=>balken({titel:"年营业额（单位：1000 欧元）", labels:["分店 A","分店 B","分店 C"],
+      werte:[300,200,100], yMin:0, yMax:350, ticks:[0,100,200,300], quadratisch:true,
+      farben:["#1f3a5f","#1f3a5f","#1f3a5f"]}),
+    felder:[
+      {t:"wahl", f:"这张图里用的是哪种手法？",
+       opt:["y 轴不是从零开始。",
+            "方块的高和宽同时变大，眼睛比较的是面积。",
+            "用了绝对数量而不是比例。"], soll:1},
+      {t:"zahl", l:"A 的营业额除以 C 的营业额", soll:3, hint:"只填数字"},
+      {t:"zahl", l:"A 的面积是 C 的多少倍？", soll:9}
+    ],
+    loes:`<p>A 卖了 300，C 卖了 100，也就是 <b>3 倍</b>。可是 A 的方块既高了三倍，<b>又</b>宽了三倍。</p>
+      <p class="rech">面积倍数 = 3 · 3 = <b>9</b></p>
+      <p>于是这张图让差距看起来比实际大三倍，大的数值被过分突出。诚实的画法是：所有柱子一样宽，只有高度不同。</p>`},
+  { name:"V2", frage:`一所学校用一次问卷的赞同率做宣传。`,
+    grafik:()=>balken({titel:"赞同率（百分比）", labels:["X 校","Y 校","我们学校"],
+      werte:[48,50,52], yMin:46, yMax:54, ticks:[46,48,50,52,54], einheit:" %",
+      farben:["#bdbdbd","#bdbdbd","#1f3a5f"]}),
+    felder:[
+      {t:"zahl", l:"X 校和我们学校相差多少个百分点？", soll:4},
+      {t:"wahl", f:"要让这张图诚实，应该改什么？",
+       opt:["把柱子画得更窄。",
+            "让 y 轴从 0 开始，或者把断轴清楚地标出来。",
+            "把百分比换算成绝对数量。"], soll:1}
+    ],
+    loes:`<p>三个数值是 48 %、50 % 和 52 %，差距只有 <b>4 个百分点</b>。</p>
+      <p>因为坐标轴从 46 才开始，它只显示了 8 个点的一小段。图上蓝色柱子的高度是第一根的 <b>三倍</b>，
+      而实际差距非常小。</p>
+      <p>术语：截断轴或压缩轴。只有在清楚标出断轴并说明理由时，才允许这样取一段。</p>`},
+  { name:"V3", frage:`一个协会在年度报告里说会员人数正在回升，并附上这张图。`,
+    grafik:()=>linie({titel:"会员人数", labels:["2023","2024","2025","2026"],
+      werte:[410,440,470,500], yMin:400, yMax:510, ticks:[400,425,450,475,500], farbe:"#2e8b57"}),
+    felder:[
+      {t:"wahl", f:"自 2018 年起的数字依次是 900、820、700、600、500、410、440、470、500。哪句话是对的？",
+       opt:["协会自 2018 年以来一直在增长。",
+            "在整段时间里协会损失很大，只是最近才略有回升。",
+            "这些数字是编造的。"], soll:1},
+      {t:"zahl", l:"自 2018 年以来协会一共少了多少会员？", soll:400}
+    ],
+    loes:`<p>这张图只画了最近四年，而且坐标轴从 400 开始。在这一小段里，曲线确实在上升。</p>
+      <p>看全部年份，协会从 <b>900</b> 人降到 <b>500</b> 人，也就是少了 <b>400</b> 人，约 44 %。</p>
+      <p>同样是真实的数字，却得出两种相反的说法。谁要声称一个趋势，就必须说明时间段，并说明为什么选这一段。</p>`}
+  ]},
+
+/* ---------- 3 Vierfeldertafel vervollstaendigen ---------- */
+{ id:"tafel", titel:"补全四格表", kurz:"由少数数据补全整张表",
+  erkl:`<p>四格表的边缘格是<b>合计</b>。只要知道三个合适的数值，其余都能靠加减算出来。</p>
+  <div class="merke"><b>条件概率</b><br>
+  \\(P_A(B) = \\dfrac{P(A\\cap B)}{P(A)}\\)<br><br>
+  在表里就是：用那一格除以<b>条件所在行或列的合计</b>。<br>
+  条件就是新的总体。</div>
+  <p>注意区别：求 \\(P(A\\cap B)\\) 要除以总数，求 \\(P_A(B)\\) 只除以 A 的合计。</p>`,
+  versionen:[
+  { name:"400 人", frage:`对 <b>400 人</b>就 A、B 两个特征做了调查。`,
+    tafel:{ kopf:["特征","A","<ovl>A</ovl>","合计"], zeilen:["B","<ovl>B</ovl>","合计"],
+      werte:[[60,100,160],[40,200,240],[100,300,400]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.6},
+      {t:"zahl", l:"P<sub>B</sub>(A)", soll:0.375},
+      {t:"zahl", l:"P(A ∩ <ovl>B</ovl>)", soll:0.1}
+    ],
+    loes:`<p>补全：<ovl>A</ovl>∩B = 160 − 60 = 100。A∩<ovl>B</ovl> = 100 − 60 = 40。
+      <ovl>A</ovl> = 400 − 100 = 300。<ovl>A</ovl>∩<ovl>B</ovl> = 300 − 100 = 200。</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(60,100)} = <b>0,6</b> &nbsp;&nbsp;
+        P<sub>B</sub>(A) = ${fr(60,160)} = <b>0,375</b> &nbsp;&nbsp;
+        P(A ∩ <ovl>B</ovl>) = ${fr(40,400)} = <b>0,1</b></p>
+      <p>注意：前两个除以的是边缘合计，最后一个除以的是总数 400。</p>`},
+  { name:"250 人", frage:`对 <b>250 人</b>就 A、B 两个特征做了调查。`,
+    tafel:{ kopf:["特征","A","<ovl>A</ovl>","合计"], zeilen:["B","<ovl>B</ovl>","合计"],
+      werte:[[80,70,150],[20,80,100],[100,150,250]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.8},
+      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:70/150, hint:"约 0,467"},
+      {t:"zahl", l:"P(B)", soll:0.6}
+    ],
+    loes:`<p>补全：<ovl>A</ovl>∩B = 150 − 80 = 70。A∩<ovl>B</ovl> = 100 − 80 = 20。
+      <ovl>A</ovl> = 250 − 100 = 150。<ovl>A</ovl>∩<ovl>B</ovl> = 150 − 70 = 80。</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(80,100)} = <b>0,8</b> &nbsp;&nbsp;
+        P<sub><ovl>A</ovl></sub>(B) = ${fr(70,150)} ≈ <b>0,467</b> &nbsp;&nbsp;
+        P(B) = ${fr(150,250)} = <b>0,6</b></p>
+      <p>这里看得很清楚：在条件 A 之下，B 的概率（0,8）比总体（0,6）大得多。
+      所以 A 和 B <b>不是</b>独立的。</p>`},
+  { name:"500 人", frage:`对 <b>500 人</b>就 A、B 两个特征做了调查。`,
+    tafel:{ kopf:["特征","A","<ovl>A</ovl>","合计"], zeilen:["B","<ovl>B</ovl>","合计"],
+      werte:[[90,60,150],[110,240,350],[200,300,500]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.45},
+      {t:"zahl", l:"P<sub>B</sub>(A)", soll:0.6},
+      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:0.2}
+    ],
+    loes:`<p>补全：<ovl>A</ovl>∩B = 150 − 90 = 60。A∩<ovl>B</ovl> = 200 − 90 = 110。
+      <ovl>A</ovl> = 500 − 200 = 300。<ovl>A</ovl>∩<ovl>B</ovl> = 300 − 60 = 240。</p>
+      <p class="rech">P<sub>A</sub>(B) = ${fr(90,200)} = <b>0,45</b> &nbsp;&nbsp;
+        P<sub>B</sub>(A) = ${fr(90,150)} = <b>0,6</b> &nbsp;&nbsp;
+        P<sub><ovl>A</ovl></sub>(B) = ${fr(60,300)} = <b>0,2</b></p>
+      <p>有了 P(A) = 0,4、P<sub>A</sub>(B) = 0,45 和 P<sub><ovl>A</ovl></sub>(B) = 0,2，
+      你现在就能把第一级为 A 的树状图完整画出来。</p>`}
+  ]},
+
+/* ---------- 4 Vom Sachtext zur Tafel ---------- */
+{ id:"text", titel:"从文字题到四格表", kurz:"把条件放进正确的格子",
+  erkl:`<p>最难的一步是把数据放进正确的格子。永远按这个顺序做。</p>
+  <div class="merke"><b>三个步骤</b><br>
+  1. 把总数写进右下角。<br>
+  2. 把文字里的每个数据分配到一个格子。注意「<b>其中</b>」这个词，它总是指向内部的格子。<br>
+  3. 其余的用减法得出。</div>
+  <p>「既不…也不…」说的总是内部右下角的那一格，也就是 \\(\\overline{A}\\cap\\overline{B}\\)。</p>`,
+  versionen:[
+  { name:"图书馆", frage:`图书馆里有 <b>200 本书</b>。其中 <b>80 本</b>是科普书（S），
+      科普书中有 <b>30 本</b>正被借出（A）。有 <b>90 本</b>书既不是科普书也没有被借出。`,
+    tafel:{ kopf:["","S","<ovl>S</ovl>","合计"], zeilen:["A","<ovl>A</ovl>","合计"],
+      werte:[[30,30,60],[50,90,140],[80,120,200]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(A)，即被借出", soll:0.3},
+      {t:"zahl", l:"P<sub>S</sub>(A)", soll:0.375},
+      {t:"zahl", l:"P<sub>A</sub>(S)", soll:0.5}
+    ],
+    loes:`<p><ovl>S</ovl> = 200 − 80 = 120。其中 90 本没被借出，所以
+      <ovl>S</ovl>∩A = 120 − 90 = 30。于是 A = 30 + 30 = 60，S∩<ovl>A</ovl> = 80 − 30 = 50。</p>
+      <p class="rech">P(A) = ${fr(60,200)} = <b>0,3</b> &nbsp;&nbsp;
+        P<sub>S</sub>(A) = ${fr(30,80)} = <b>0,375</b> &nbsp;&nbsp;
+        P<sub>A</sub>(S) = ${fr(30,60)} = <b>0,5</b></p>
+      <p>可见科普书比平均水平更常被借走（0,375 对 0,3）。</p>`},
+  { name:"运动会", frage:`<b>150 个孩子</b>参加运动会。<b>60 人</b>跑接力（St），
+      其中 <b>30 人</b>也参加跳远（W）。有 <b>54 个孩子</b>既不跑接力也不跳远。`,
+    tafel:{ kopf:["","St","<ovl>St</ovl>","合计"], zeilen:["W","<ovl>W</ovl>","合计"],
+      werte:[[30,36,66],[30,54,84],[60,90,150]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(W)，即跳远", soll:0.44},
+      {t:"zahl", l:"P<sub>St</sub>(W)", soll:0.5},
+      {t:"zahl", l:"P<sub>W</sub>(St)", soll:30/66, hint:"约 0,455"}
+    ],
+    loes:`<p><ovl>St</ovl> = 150 − 60 = 90。其中 54 人不跳远，所以
+      <ovl>St</ovl>∩W = 90 − 54 = 36。于是 W = 30 + 36 = 66，St∩<ovl>W</ovl> = 60 − 30 = 30。</p>
+      <p class="rech">P(W) = ${fr(66,150)} = <b>0,44</b> &nbsp;&nbsp;
+        P<sub>St</sub>(W) = ${fr(30,60)} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>W</sub>(St) = ${fr(30,66)} ≈ <b>0,455</b></p>`},
+  { name:"车辆检查", frage:`一次检查中查了 <b>250 辆车</b>。其中 <b>100 辆</b>是柴油车（D），
+      柴油车中有 <b>25 辆</b>被开了罚单（B）。有 <b>135 辆</b>车既不是柴油车也没被开罚单。`,
+    tafel:{ kopf:["","D","<ovl>D</ovl>","合计"], zeilen:["B","<ovl>B</ovl>","合计"],
+      werte:[[25,15,40],[75,135,210],[100,150,250]],
+      geg:[[true,false,false],[false,true,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(B)，即被开罚单", soll:0.16},
+      {t:"zahl", l:"P<sub>D</sub>(B)", soll:0.25},
+      {t:"zahl", l:"P<sub>B</sub>(D)", soll:0.625}
+    ],
+    loes:`<p><ovl>D</ovl> = 250 − 100 = 150。其中 135 辆没被开罚单，所以
+      <ovl>D</ovl>∩B = 15。于是 B = 25 + 15 = 40，D∩<ovl>B</ovl> = 75。</p>
+      <p class="rech">P(B) = ${fr(40,250)} = <b>0,16</b> &nbsp;&nbsp;
+        P<sub>D</sub>(B) = ${fr(25,100)} = <b>0,25</b> &nbsp;&nbsp;
+        P<sub>B</sub>(D) = ${fr(25,40)} = <b>0,625</b></p>
+      <p>最后一个数把条件反了过来：被开罚单的车里有 62,5 % 是柴油车，
+      尽管柴油车只占全部车辆的 40 %。</p>`}
+  ]},
+
+/* ---------- 5 Prozentangaben ---------- */
+{ id:"prozent", titel:"由百分数建表", kurz:"用概率代替人数",
+  erkl:`<p>如果题目只给百分数，你就用总和 <b>1</b> 来算，而不是用人数。表格的用法完全一样。</p>
+  <div class="merke"><b>常见说法</b><br>
+  「<b>20 %</b> 有 A，<b>30 %</b> 有 B，<b>5 %</b> 两者都有。」<br><br>
+  第三个数属于<b>内部格子</b> A∩B，不是边缘合计。</div>
+  <p>解读时要记住：一句话必须有<b>参照群体</b>。单说「80 %」什么也没说，
+  「协会成员的 80 %」才有意义。</p>`,
+  versionen:[
+  { name:"宠物", frage:`某城市 <b>30 %</b> 的家庭养宠物（H），<b>45 %</b> 有花园（G）。
+      <b>15 %</b> 两者都有。`,
+    tafel:{ kopf:["","H","<ovl>H</ovl>","合计"], zeilen:["G","<ovl>G</ovl>","合计"],
+      werte:[["0,15","0,30","0,45"],["0,15","0,40","0,55"],["0,30","0,70","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>H</sub>(G)", soll:0.5},
+      {t:"zahl", l:"P<sub>G</sub>(H)", soll:1/3, hint:"约 0,333"},
+      {t:"wahl", f:"P(H ∩ <ovl>G</ovl>) = 0,15 在这个情境里是什么意思？",
+       opt:["养宠物的家庭中有 15 % 没有花园。",
+            "全部家庭中有 15 % 养宠物并且没有花园。",
+            "没有花园的家庭中有 15 % 养宠物。"], soll:1}
+    ],
+    loes:`<p>表格：H∩G = 0,15。H∩<ovl>G</ovl> = 0,30 − 0,15 = 0,15。
+      <ovl>H</ovl>∩G = 0,45 − 0,15 = 0,30。<ovl>H</ovl>∩<ovl>G</ovl> = 0,70 − 0,30 = 0,40。</p>
+      <p class="rech">P<sub>H</sub>(G) = ${fr("0,15","0,30")} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>G</sub>(H) = ${fr("0,15","0,45")} = ${fr(1,3)} ≈ <b>0,333</b></p>
+      <p>求交事件时你除以 <b>1</b>，等于没除。所以 P(H ∩ <ovl>G</ovl>) 是占<b>全部</b>家庭的比例。</p>`},
+  { name:"眼镜", frage:`某学校 <b>20 %</b> 的人戴眼镜（B），<b>60 %</b> 骑自行车上学（F）。
+      <b>10 %</b> 两者都符合。`,
+    tafel:{ kopf:["","B","<ovl>B</ovl>","合计"], zeilen:["F","<ovl>F</ovl>","合计"],
+      werte:[["0,10","0,50","0,60"],["0,10","0,30","0,40"],["0,20","0,80","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>B</sub>(F)", soll:0.5},
+      {t:"zahl", l:"P<sub>F</sub>(B)", soll:1/6, hint:"约 0,167"},
+      {t:"zahl", l:"P(<ovl>B</ovl> ∩ <ovl>F</ovl>)", soll:0.3}
+    ],
+    loes:`<p>表格：B∩F = 0,10。B∩<ovl>F</ovl> = 0,20 − 0,10 = 0,10。
+      <ovl>B</ovl>∩F = 0,60 − 0,10 = 0,50。<ovl>B</ovl>∩<ovl>F</ovl> = 0,80 − 0,50 = 0,30。</p>
+      <p class="rech">P<sub>B</sub>(F) = ${fr("0,10","0,20")} = <b>0,5</b> &nbsp;&nbsp;
+        P<sub>F</sub>(B) = ${fr("0,10","0,60")} ≈ <b>0,167</b> &nbsp;&nbsp;
+        P(<ovl>B</ovl> ∩ <ovl>F</ovl>) = <b>0,3</b></p>
+      <p>戴眼镜的人里有一半骑车，但骑车的人里只有六分之一戴眼镜。
+      两个条件概率就是<b>不一样</b>。</p>`},
+  { name:"音乐", frage:`<b>40 %</b> 的青少年参加音乐社团（M），<b>25 %</b> 在合唱团唱歌（C）。
+      <b>10 %</b> 两样都做。`,
+    tafel:{ kopf:["","M","<ovl>M</ovl>","合计"], zeilen:["C","<ovl>C</ovl>","合计"],
+      werte:[["0,10","0,15","0,25"],["0,30","0,45","0,75"],["0,40","0,60","1,00"]],
+      geg:[[true,false,true],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P<sub>M</sub>(C)", soll:0.25},
+      {t:"zahl", l:"P<sub>C</sub>(M)", soll:0.4},
+      {t:"wahl", f:"M 和 C 是随机独立的吗？",
+       opt:["是，因为 P(M ∩ C) = P(M) · P(C)。",
+            "不是，因为 P<sub>M</sub>(C) 大于 P(C)。",
+            "根据这些数据无法判断。"], soll:0}
+    ],
+    loes:`<p>表格：M∩C = 0,10。M∩<ovl>C</ovl> = 0,30。<ovl>M</ovl>∩C = 0,15。
+      <ovl>M</ovl>∩<ovl>C</ovl> = 0,45。</p>
+      <p class="rech">P<sub>M</sub>(C) = ${fr("0,10","0,40")} = <b>0,25</b> &nbsp;&nbsp;
+        P<sub>C</sub>(M) = ${fr("0,10","0,25")} = <b>0,4</b></p>
+      <p>检验独立性：P(M) · P(C) = 0,40 · 0,25 = <b>0,10</b>，这正好就是 P(M ∩ C)。
+      所以两个事件是<b>独立</b>的。</p>
+      <p>也可以这样看：P<sub>M</sub>(C) = 0,25 和 P(C) = 0,25 一样大，条件没有改变任何东西。</p>`}
+  ]},
+
+/* ---------- 6 Tafel aus bedingten Wahrscheinlichkeiten ---------- */
+{ id:"bedingt", titel:"由条件概率建表", kurz:"归位、相乘、评价",
+  erkl:`<p>有时文字里根本没有给内部格子，只给了一个边缘概率和两个条件概率。
+  这时就用路径法则算进去。</p>
+  <div class="merke"><b>做法</b><br>
+  1. 给数据归位：哪个是 P(A)，哪个是 P<sub>A</sub>(Z)，哪个是 P<sub><ovl>A</ovl></sub>(Z)？<br>
+  2. 内部格子 = 边缘概率 · 条件概率。<br>
+  3. 其余用合计补齐。</div>
+  <p>当心这样的说法：「没有合同的成员中有 80 % 满意」。这<b>不是</b> P(Z)，
+  而是 P<sub><ovl>A</ovl></sub>(Z)。</p>`,
+  versionen:[
+  { name:"网店", frage:`<b>30 %</b> 的订单走快递（E）。普通订单的顾客中有 <b>80 %</b> 满意（Z）。
+      快递订单中有 <b>50 %</b> 不满意。去年的总体满意度是 <b>68 %</b>。`,
+    tafel:{ kopf:["","E","<ovl>E</ovl>","合计"], zeilen:["Z","<ovl>Z</ovl>","合计"],
+      werte:[["0,15","0,56","0,71"],["0,15","0,14","0,29"],["0,30","0,70","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z)，即总体满意度", soll:0.71},
+      {t:"wahl", f:"和去年相比，满意度提高了吗？",
+       opt:["提高了，从 68 % 到 71 %。", "没有，降到了 50 %。",
+            "这无法比较。"], soll:0}
+    ],
+    loes:`<p>归位：P(E) = 0,30，P<sub><ovl>E</ovl></sub>(Z) = 0,80，
+      P<sub>E</sub>(<ovl>Z</ovl>) = 0,50，因此 P<sub>E</sub>(Z) = 0,50。</p>
+      <p class="rech">P(E ∩ Z) = 0,30 · 0,50 = <b>0,15</b><br>
+        P(<ovl>E</ovl>) = 1 − 0,30 = 0,70<br>
+        P(<ovl>E</ovl> ∩ Z) = 0,70 · 0,80 = <b>0,56</b></p>
+      <p class="rech">P(Z) = 0,15 + 0,56 = <b>0,71</b></p>
+      <p>71 % 高于去年的 68 %，满意度确实上升了。只盯着快递那组差数字的人，
+      会忽略快递只占 30 %。</p>`},
+  { name:"电影院", frage:`<b>25 %</b> 的观众订包厢座（L）。其余观众中有 <b>60 %</b> 满意（Z）。
+      包厢观众中有 <b>20 %</b> 不满意。影院给自己定的目标是总体满意度 <b>70 %</b>。`,
+    tafel:{ kopf:["","L","<ovl>L</ovl>","合计"], zeilen:["Z","<ovl>Z</ovl>","合计"],
+      werte:[["0,20","0,45","0,65"],["0,05","0,30","0,35"],["0,25","0,75","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z)，即总体满意度", soll:0.65},
+      {t:"wahl", f:"70 % 的目标达到了吗？",
+       opt:["达到了，80 % 还远远超出。", "没有，还差 5 个百分点。",
+            "达到了，正好。"], soll:1}
+    ],
+    loes:`<p>归位：P(L) = 0,25，P<sub><ovl>L</ovl></sub>(Z) = 0,60，
+      P<sub>L</sub>(<ovl>Z</ovl>) = 0,20，因此 P<sub>L</sub>(Z) = 0,80。</p>
+      <p class="rech">P(L ∩ Z) = 0,25 · 0,80 = <b>0,20</b><br>
+        P(<ovl>L</ovl> ∩ Z) = 0,75 · 0,60 = <b>0,45</b></p>
+      <p class="rech">P(Z) = 0,20 + 0,45 = <b>0,65</b></p>
+      <p>70 % 的目标差了 5 个百分点。有意思的是：包厢观众的满意度最高，有 80 %，
+      但他们只占全部观众的四分之一。</p>`},
+  { name:"公交", frage:`<b>40 %</b> 的乘客有月票（A）。没有月票的乘客中有 <b>55 %</b> 满意（Z）。
+      有月票的乘客中有 <b>30 %</b> 不满意。去年有 <b>58 %</b> 满意。`,
+    tafel:{ kopf:["","A","<ovl>A</ovl>","合计"], zeilen:["Z","<ovl>Z</ovl>","合计"],
+      werte:[["0,28","0,33","0,61"],["0,12","0,27","0,39"],["0,40","0,60","1,00"]],
+      geg:[[false,false,false],[false,false,false],[true,false,true]] },
+    felder:[
+      {t:"zahl", l:"P(Z)，即总体满意度", soll:0.61},
+      {t:"zahl", l:"P<sub>Z</sub>(A)，即满意者中有月票的比例", soll:0.28/0.61, hint:"约 0,459"}
+    ],
+    loes:`<p>归位：P(A) = 0,40，P<sub><ovl>A</ovl></sub>(Z) = 0,55，
+      P<sub>A</sub>(<ovl>Z</ovl>) = 0,30，因此 P<sub>A</sub>(Z) = 0,70。</p>
+      <p class="rech">P(A ∩ Z) = 0,40 · 0,70 = <b>0,28</b><br>
+        P(<ovl>A</ovl> ∩ Z) = 0,60 · 0,55 = <b>0,33</b><br>
+        P(Z) = 0,28 + 0,33 = <b>0,61</b></p>
+      <p class="rech">P<sub>Z</sub>(A) = ${fr("0,28","0,61")} ≈ <b>0,459</b></p>
+      <p>和去年的 58 % 相比有所改善。最后一个数把条件反了过来：
+      满意的乘客里将近 46 % 有月票。</p>`}
+  ]},
+
+/* ---------- 7 Sensitivitaet und Spezifitaet ---------- */
+{ id:"test", titel:"评判检测方法", kurz:"灵敏度、特异度、反过来问",
+  erkl:`<p>检测和检验设备有两个质量指标。两个都是条件概率，只是条件不同。</p>
+  <div class="merke"><b>两个质量指标</b><br>
+  <b>灵敏度</b> = P<sub>确实有问题</sub>(检测报警)<br>
+  <b>特异度</b> = P<sub>确实没问题</sub>(检测不报警)<br><br>
+  两者都除以一个<b>列的合计</b>，不是除以总数。</div>
+  <p>实际上最重要的却是第三个问题：如果检测报警了，真有问题的可能性有多大？
+  这就是<b>反过来问</b>，答案常常出乎意料地低，因为没问题的那一组人数要大得多。</p>`,
+  versionen:[
+  { name:"过敏检测", frage:`对 <b>600 人</b>做检测。其中 <b>60 人</b>确实过敏，
+      检测对其中 <b>54 人</b>报阳性。在 <b>540 名</b>不过敏的人中，检测误报了 <b>27 人</b>。`,
+    tafel:{ kopf:["","过敏","不过敏","合计"], zeilen:["检测 +","检测 −","合计"],
+      werte:[[54,27,81],[6,513,519],[60,540,600]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"灵敏度", soll:0.9},
+      {t:"zahl", l:"特异度", soll:0.95},
+      {t:"zahl", l:"P(过敏 | 检测为阳性)", soll:2/3, hint:"约 0,667"}
+    ],
+    loes:`<p class="rech">灵敏度 = ${fr(54,60)} = <b>0,90 = 90 %</b></p>
+      <p class="rech">特异度 = ${fr(513,540)} = <b>0,95 = 95 %</b></p>
+      <p class="rech">P<sub>检测 +</sub>(过敏) = ${fr(54,81)} = ${fr(2,3)} ≈ <b>0,667</b></p>
+      <p>虽然这个检测很好，阳性结果里仍有三分之一是错的。
+      原因是不过敏的人数是过敏者的九倍。</p>`},
+  { name:"烟雾报警器", frage:`在 <b>1000 次测试</b>中有 <b>50 次</b>真的有烟，
+      报警器其中 <b>48 次</b>作出反应。在 <b>950 次</b>没有烟的情况下，它误报了 <b>38 次</b>。`,
+    tafel:{ kopf:["","有烟","无烟","合计"], zeilen:["报警","未报警","合计"],
+      werte:[[48,38,86],[2,912,914],[50,950,1000]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"灵敏度", soll:0.96},
+      {t:"zahl", l:"特异度", soll:0.96},
+      {t:"zahl", l:"P(有烟 | 报警)", soll:48/86, hint:"约 0,558"}
+    ],
+    loes:`<p class="rech">灵敏度 = ${fr(48,50)} = <b>0,96</b> &nbsp;&nbsp;
+        特异度 = ${fr(912,950)} = <b>0,96</b></p>
+      <p class="rech">P<sub>报警</sub>(有烟) = ${fr(48,86)} ≈ <b>0,558</b></p>
+      <p>两个指标都是 96 %，可是差不多每两次报警就有一次是误报。
+      原因：没有烟的情况多了 19 倍。那里 4 % 的误报，绝对数就是 38 次，
+      而真正有烟的只有 48 次。</p>`},
+  { name:"水果分拣", frage:`一台机器检查 <b>800 个苹果</b>。其中 <b>40 个</b>是坏的，
+      机器认出了 <b>36 个</b>坏苹果。在 <b>760 个</b>好苹果中，它错误地剔除了 <b>38 个</b>。`,
+    tafel:{ kopf:["","坏","好","合计"], zeilen:["剔除","放行","合计"],
+      werte:[[36,38,74],[4,722,726],[40,760,800]],
+      geg:[[true,true,false],[false,false,false],[true,true,true]] },
+    felder:[
+      {t:"zahl", l:"灵敏度", soll:0.9},
+      {t:"zahl", l:"特异度", soll:0.95},
+      {t:"zahl", l:"P(坏 | 被剔除)", soll:36/74, hint:"约 0,486"}
+    ],
+    loes:`<p class="rech">灵敏度 = ${fr(36,40)} = <b>0,90</b> &nbsp;&nbsp;
+        特异度 = ${fr(722,760)} = <b>0,95</b></p>
+      <p class="rech">P<sub>被剔除</sub>(坏) = ${fr(36,74)} ≈ <b>0,486</b></p>
+      <p>被剔除的苹果里，真正坏的还不到一半。对工厂来说：每 74 个被剔除的苹果中，
+      有 38 个本来还能卖。这里值得再用人工复检一次。</p>`}
+  ]}
+];
+
+/* ============================================================
+   App
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const KEY = "m10-training-zh";
+const store = { ok:true,
+  get(k,d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ this.ok=false; return d; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ this.ok=false; } } };
+let geloest = {};
+try{ geloest = JSON.parse(store.get(KEY,"{}")) || {}; }catch(e){ geloest = {}; }
+let akt = 0, aktV = 0;
+
+/* Eingaben tolerant lesen: 0,75 oder 75% oder 3/4 */
+function zahl(s){
+  if(s==null) return null;
+  s = String(s).trim().replace(",",".").replace(/\s/g,"");
+  if(!s) return null;
+  if(s.endsWith("%")){ const v=parseFloat(s.slice(0,-1)); return isFinite(v)? v/100 : null; }
+  if(s.includes("/")){ const [a,b]=s.split("/").map(parseFloat);
+    return (isFinite(a)&&isFinite(b)&&b!==0) ? a/b : null; }
+  const v = parseFloat(s);
+  return isFinite(v) ? v : null;
+}
+/* Prozent und Dezimal beide zulassen, wenn der Sollwert hoechstens 1 ist */
+function stimmt(ein, soll){
+  const v = zahl(ein); if(v===null) return false;
+  const tol = Math.max(0.0015, Math.abs(soll)*0.002);
+  if(Math.abs(v-soll) <= tol) return true;
+  if(soll<=1 && Math.abs(v/100-soll) <= tol) return true;   // 75 statt 0,75
+  return false;
+}
+const schl = (t,v) => t+"#"+v;
+
+function navBauen(){
+  $("nav").innerHTML = THEMEN.map((t,i)=>{
+    const d = t.versionen.map((_,j)=> geloest[schl(t.id,j)] ? '<i class="done"></i>' : '<i></i>').join("");
+    return `<a class="th" data-i="${i}"><span class="num">${i+1}</span>
+      <span class="ttl">${t.titel}</span><span class="dots">${d}</span></a>`;
+  }).join("");
+  $("nav").querySelectorAll("a.th").forEach(a =>
+    a.addEventListener("click", ()=>{ zeige(+a.dataset.i, 0); document.body.classList.remove("nav-open"); }));
+  const ges = THEMEN.reduce((s,t)=>s+t.versionen.length,0);
+  const c = Object.keys(geloest).length;
+  $("#prog .bar i") || null;
+  document.querySelector("#prog .bar i").style.width = (100*c/ges)+"%";
+  document.querySelector("#prog .txt").textContent = `已完成 ${c} / ${ges} 题`;
+}
+
+function felderHTML(v){
+  return v.felder.map((f,k)=>{
+    if(f.t==="wahl"){
+      return `<div class="frage" style="margin-top:14px">${f.f}</div>
+        <div class="wahl" data-k="${k}">${f.opt.map((o,m)=>
+          `<label data-m="${m}"><input type="radio" name="w${k}" value="${m}"><span>${o}</span></label>`).join("")}</div>`;
+    }
+    return `<div class="feld" data-k="${k}">
+      <span class="fl">${f.l}</span>
+      <input type="text" inputmode="decimal" autocomplete="off">
+      <span class="mark"></span>
+      <span class="hint">${f.hint||""}</span></div>`;
+  }).join("");
+}
+
+function tafelHTML(t){
+  let s = `<table class="vf"><tr>${t.kopf.map((k,i)=>
+    `<th class="${i?'ev':''}">${k}</th>`).join("")}</tr>`;
+  t.zeilen.forEach((zl,r)=>{
+    s += `<tr><th class="ev">${zl}</th>` + t.werte[r].map((w,c)=>
+      t.geg[r][c] ? `<td class="geg">${w}</td>`
+                  : `<td data-r="${r}" data-c="${c}"><input type="text" inputmode="decimal" autocomplete="off"></td>`
+    ).join("") + `</tr>`;
+  });
+  return s + `</table>`;
+}
+
+function zeige(i, v){
+  akt = i; aktV = v;
+  const t = THEMEN[i], ver = t.versionen[v];
+  document.querySelectorAll("a.th").forEach(a=>a.classList.toggle("on", +a.dataset.i===i));
+  $("crumb").textContent = `主题 ${i+1} / ${THEMEN.length} · ${t.titel}`;
+
+  $("main").innerHTML = `
+    <div class="hd">
+      <div class="kicker">主题 ${i+1}</div>
+      <h2>${t.titel}</h2>
+      <div class="sub">${t.kurz}</div>
+    </div>
+    <div class="card erkl"><h3>你需要知道</h3>${t.erkl}</div>
+
+    <div class="vers ui"><span class="lbl">版本：</span>${
+      t.versionen.map((x,j)=>`<button class="v ${j===v?"on":""}" data-v="${j}">${x.name}${
+        geloest[schl(t.id,j)]?'<span class="ok">✓</span>':''}</button>`).join("")}</div>
+
+    <div class="card">
+      <h3>练习</h3>
+      <div class="frage">${ver.frage}</div>
+      ${ver.grafik ? `<div class="grafikbox">${ver.grafik()}</div>` : ""}
+      ${ver.tafel ? `<p class="ui" style="font-size:.88rem;color:var(--muted);margin-bottom:4px">
+          请先把表格里灰色的空格填好。</p>${tafelHTML(ver.tafel)}` : ""}
+      ${felderHTML(ver)}
+      <div class="btnrow ui">
+        <button class="act pri" id="pruefen">检查</button>
+        <button class="act" id="leeren">清空</button>
+      </div>
+      <div class="fb" id="fb"></div>
+      <details class="loes"><summary>显示解题过程</summary>
+        <div class="loesbox">${ver.loes}</div></details>
+    </div>`;
+
+  document.querySelectorAll("button.v").forEach(b=>
+    b.addEventListener("click", ()=> zeige(i, +b.dataset.v)));
+  $("pruefen").addEventListener("click", pruefen);
+  $("leeren").addEventListener("click", ()=> zeige(i, v));
+  $("prev").disabled = (i===0); $("next").disabled = (i===THEMEN.length-1);
+  window.scrollTo({top:0, behavior:"instant"});
+  katexen();
+}
+
+function pruefen(){
+  const t = THEMEN[akt], ver = t.versionen[aktV];
+  let richtig = 0, gesamt = 0;
+
+  if(ver.tafel){
+    document.querySelectorAll("table.vf td[data-r]").forEach(td=>{
+      const r=+td.dataset.r, c=+td.dataset.c, inp=td.querySelector("input");
+      const soll = zahl(String(ver.tafel.werte[r][c]));
+      gesamt++;
+      const ok = stimmt(inp.value, soll);
+      td.classList.toggle("r", ok); td.classList.toggle("f", !ok && inp.value.trim()!=="");
+      if(ok) richtig++;
+    });
+  }
+  ver.felder.forEach((f,k)=>{
+    gesamt++;
+    if(f.t==="wahl"){
+      const box = document.querySelector(`.wahl[data-k="${k}"]`);
+      const sel = box.querySelector("input:checked");
+      box.querySelectorAll("label").forEach(l=>l.classList.remove("r","f"));
+      if(sel){
+        const m = +sel.value;
+        const lab = box.querySelector(`label[data-m="${m}"]`);
+        if(m===f.soll){ lab.classList.add("r"); richtig++; }
+        else{ lab.classList.add("f");
+              box.querySelector(`label[data-m="${f.soll}"]`).classList.add("r"); }
+      }
+    } else {
+      const d = document.querySelector(`.feld[data-k="${k}"]`);
+      const inp = d.querySelector("input"), mk = d.querySelector(".mark");
+      const ok = stimmt(inp.value, f.soll);
+      inp.classList.toggle("r", ok); inp.classList.toggle("f", !ok && inp.value.trim()!=="");
+      mk.textContent = ok ? "✓" : (inp.value.trim() ? "✗" : "");
+      mk.style.color = ok ? "var(--ok)" : "var(--bad)";
+      if(ok) richtig++;
+    }
+  });
+
+  const fb = $("fb"); fb.className = "fb show";
+  if(richtig===gesamt){
+    fb.classList.add("gut");
+    fb.innerHTML = `<b>全部正确。</b>${gesamt} 项全对。
+      还是看一眼解题过程吧，那里写了这道题的关键在哪里。`;
+    geloest[schl(t.id,aktV)] = 1;
+    store.set(KEY, JSON.stringify(geloest));
+    navBauen();
+    document.querySelectorAll("button.v").forEach((b,j)=>{
+      if(j===aktV && !b.querySelector(".ok")) b.insertAdjacentHTML("beforeend",'<span class="ok">✓</span>');
+    });
+  } else if(richtig >= gesamt/2){
+    fb.classList.add("teil");
+    fb.innerHTML = `<b>对了 ${richtig} / ${gesamt} 项。</b>红色标出的地方还不对。
+      提示：条件概率要检查一下，你除的是哪个数。`;
+  } else {
+    fb.classList.add("schlecht");
+    fb.innerHTML = `<b>对了 ${richtig} / ${gesamt} 项。</b>还差得多。
+      请再读一遍上面的「你需要知道」，然后打开解题过程。`;
+  }
+  katexen();
+}
+
+function katexen(){
+  if(window.renderMathInElement){
+    renderMathInElement($("main"), {
+      delimiters:[{left:"\\(",right:"\\)",display:false},{left:"$$",right:"$$",display:true}],
+      throwOnError:false });
+  }
+}
+
+$("prev").addEventListener("click", ()=>{ if(akt>0) zeige(akt-1,0); });
+$("next").addEventListener("click", ()=>{ if(akt<THEMEN.length-1) zeige(akt+1,0); });
+$("menuBtn").addEventListener("click", ()=> document.body.classList.toggle("nav-open"));
+$("scrim").addEventListener("click", ()=> document.body.classList.remove("nav-open"));
+$("reset").addEventListener("click", ()=>{
+  if(!confirm("要清除全部完成标记吗？")) return;
+  geloest = {}; store.set(KEY,"{}"); navBauen(); zeige(akt,aktV);
+});
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  navBauen(); zeige(0,0);
+  if(!store.ok){
+    const w=document.createElement("div"); w.className="ui";
+    w.style.cssText="background:#fdf6e8;border-bottom:1px solid #efd9a8;padding:9px 26px;font-size:.84rem";
+    w.textContent="这个浏览器不允许保存。关掉页面后进度会丢失，其他功能都正常。";
+    $("wrap").prepend(w);
+  }
+});
+</script>
+
+</body>
+</html>

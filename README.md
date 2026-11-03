@@ -8,3 +8,6 @@ Sieben Themen mit je drei Aufgabenversionen, Selbstkontrolle und Lösungsweg.
 Der Fortschritt bleibt lokal im Browser gespeichert.
 
 Online: https://erikdahlmann.github.io/training-stochastik-10/
+
+Eine vollständig chinesische Fassung derselben Aufgaben liegt unter `zh/`.
+Online: https://erikdahlmann.github.io/training-stochastik-10/zh/
