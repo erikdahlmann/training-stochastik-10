@@ -170,6 +170,25 @@
   .grafikbox svg{width:100%; height:auto; display:block; max-height:300px}
   ovl{text-decoration:overline}
 
+
+  /* ---------- Fortschritts-Code ---------- */
+  .codebar{display:flex; gap:9px; align-items:center; flex-wrap:wrap;
+           background:var(--paper); border-bottom:1px solid var(--line);
+           padding:9px 26px; font-size:.84rem}
+  .codebar .lbl{color:var(--muted)}
+  .codebar code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+                font-size:1rem; letter-spacing:.09em; background:var(--surface);
+                border:1px solid var(--line); border-radius:8px; padding:5px 11px; user-select:all}
+  .codebar input{width:122px; padding:6px 10px; border:1px solid var(--line); border-radius:8px;
+                 font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.95rem;
+                 background:var(--surface); color:var(--ink); text-transform:uppercase}
+  .codebar input:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+  .codebar button.act{padding:6px 13px; font-size:.82rem}
+  .codebar .trenn{width:1px; height:22px; background:var(--line); margin:0 4px}
+  .codebar .cmeld{font-size:.82rem; color:var(--muted)}
+  .codebar .cmeld.gut{color:var(--ok)}
+  .codebar .cmeld.bad{color:var(--bad)}
+
   #scrim{display:none; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:29}
   @media(max-width:900px){
     #side{transform:translateX(-100%); transition:transform .22s; box-shadow:var(--shadow)}
@@ -178,6 +197,8 @@
     #wrap{margin-left:0}
     #menuBtn{display:inline-block}
     main{padding:18px 15px 0}
+    .codebar{padding:9px 15px}
+    .codebar .trenn{display:none}
   }
 </style>
 </head>
@@ -205,6 +226,17 @@
     <span class="sp"></span>
     <button class="act" id="prev">← 上一个</button>
     <button class="act" id="next">下一个 →</button>
+  </div>
+  <div class="codebar ui">
+    <span class="lbl">你的代码</span>
+    <code id="code"></code>
+    <button class="act" id="codeKopieren">复制</button>
+    <span class="trenn"></span>
+    <span class="lbl">下次接着做</span>
+    <input id="codeEin" type="text" placeholder="ABC-DEF" autocomplete="off" spellcheck="false"
+           aria-label="输入代码">
+    <button class="act" id="codeLaden">载入</button>
+    <span class="cmeld" id="cmeld"></span>
   </div>
   <main id="main"></main><!-- rechtliches --><style>.erik-recht{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center;padding:18px 12px 22px;opacity:.75}.erik-recht a{color:inherit}@media print{.erik-recht{display:none}}</style><footer class="erik-recht"><a href="https://erikdahlmann.github.io/impressum.html">Impressum</a> · <a href="https://erikdahlmann.github.io/datenschutz.html">Datenschutz</a></footer><!-- /rechtliches -->
 </div>
@@ -726,6 +758,59 @@ function stimmt(ein, soll){
   return false;
 }
 const schl = (t,v) => t+"#"+v;
+const T = { kopiert:"已复制", falsch:"代码无效。", geladen:"进度已载入。" };
+
+/* ============================================================
+   Fortschritts-Code: 21 Aufgaben + aktuelle Stelle + Prüfziffer
+   ============================================================ */
+const ALPHA = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";   // ohne 0 1 I O
+
+function alleAufgaben(){
+  const a = [];
+  THEMEN.forEach(t => t.versionen.forEach((_, j) => a.push([t.id, j])));
+  return a;
+}
+function pruefziffer(x){
+  let p = 0, rest = x;
+  while(rest > 0){ p = (p + rest % 32) % 16; rest = Math.floor(rest / 32); }
+  return p;
+}
+function codeBauen(){
+  let w = 0;
+  alleAufgaben().forEach(([id, j]) => { w = w * 2 + (geloest[schl(id, j)] ? 1 : 0); });
+  w = w * 8 + akt;          // Thema
+  w = w * 4 + aktV;         // Version
+  w = w * 16 + pruefziffer(w);
+  let s = "";
+  for(let i = 5; i >= 0; i--) s += ALPHA[Math.floor(w / Math.pow(32, i)) % 32];
+  return s.slice(0, 3) + "-" + s.slice(3);
+}
+function codeLesen(txt){
+  const s = String(txt).toUpperCase().replace(/[^0-9A-Z]/g, "");
+  if(s.length !== 6) return null;
+  let w = 0;
+  for(const c of s){ const k = ALPHA.indexOf(c); if(k < 0) return null; w = w * 32 + k; }
+  const pz = w % 16, kern = Math.floor(w / 16);
+  if(pruefziffer(kern) !== pz) return null;
+  let rest = kern;
+  const v = rest % 4;  rest = Math.floor(rest / 4);
+  const i = rest % 8;  rest = Math.floor(rest / 8);
+  if(i >= THEMEN.length || v >= THEMEN[i].versionen.length) return null;
+  const neu = {}, liste = alleAufgaben();
+  for(let k = liste.length - 1; k >= 0; k--){
+    if(rest % 2) neu[schl(liste[k][0], liste[k][1])] = 1;
+    rest = Math.floor(rest / 2);
+  }
+  return { geloest: neu, i, v };
+}
+function codeZeigen(){ $("code").textContent = codeBauen(); }
+function codeMelden(text, art){
+  const m = $("cmeld");
+  m.textContent = text; m.className = "cmeld " + (art || "");
+  clearTimeout(codeMelden.t);
+  codeMelden.t = setTimeout(()=>{ m.textContent = ""; m.className = "cmeld"; }, 4000);
+}
+
 
 function navBauen(){
   $("nav").innerHTML = THEMEN.map((t,i)=>{
@@ -809,6 +894,7 @@ function zeige(i, v){
   $("leeren").addEventListener("click", ()=> zeige(i, v));
   $("prev").disabled = (i===0); $("next").disabled = (i===THEMEN.length-1);
   window.scrollTo({top:0, behavior:"instant"});
+  codeZeigen();
   katexen();
 }
 
@@ -858,6 +944,7 @@ function pruefen(){
     geloest[schl(t.id,aktV)] = 1;
     store.set(KEY, JSON.stringify(geloest));
     navBauen();
+    codeZeigen();
     document.querySelectorAll("button.v").forEach((b,j)=>{
       if(j===aktV && !b.querySelector(".ok")) b.insertAdjacentHTML("beforeend",'<span class="ok">✓</span>');
     });
@@ -885,6 +972,22 @@ $("prev").addEventListener("click", ()=>{ if(akt>0) zeige(akt-1,0); });
 $("next").addEventListener("click", ()=>{ if(akt<THEMEN.length-1) zeige(akt+1,0); });
 $("menuBtn").addEventListener("click", ()=> document.body.classList.toggle("nav-open"));
 $("scrim").addEventListener("click", ()=> document.body.classList.remove("nav-open"));
+$("codeKopieren").addEventListener("click", ()=>{
+  const txt = $("code").textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(
+    ()=> codeMelden(T.kopiert, "gut"), ()=> codeMelden(txt, ""));
+  else codeMelden(txt, "");
+});
+$("codeLaden").addEventListener("click", ()=>{
+  const stand = codeLesen($("codeEin").value);
+  if(!stand){ codeMelden(T.falsch, "bad"); return; }
+  geloest = stand.geloest;
+  store.set(KEY, JSON.stringify(geloest));
+  $("codeEin").value = "";
+  navBauen(); zeige(stand.i, stand.v);
+  codeMelden(T.geladen, "gut");
+});
+$("codeEin").addEventListener("keydown", e=>{ if(e.key === "Enter") $("codeLaden").click(); });
 $("reset").addEventListener("click", ()=>{
   if(!confirm("要清除全部完成标记吗？")) return;
   geloest = {}; store.set(KEY,"{}"); navBauen(); zeige(akt,aktV);
