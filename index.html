@@ -289,7 +289,7 @@ const THEMEN = [
   { name:"Kugeln", frage:`In einer Schale liegen <b>5 Kugeln</b>: <b>2 rote</b> und <b>3 blaue</b>.
       Du ziehst <b>zwei Kugeln nacheinander ohne Zurücklegen</b>.`,
     felder:[
-      {t:"zahl", l:"P(beide rot)", soll:0.1, hint:"0,1 oder 10 %"},
+      {t:"zahl", l:"P(beide rot)", soll:0.1, hint:"Dezimalzahl oder Prozent"},
       {t:"zahl", l:"P(genau eine rot)", soll:0.6},
       {t:"zahl", l:"P(mindestens eine rot)", soll:0.7}
     ],
@@ -316,9 +316,9 @@ const THEMEN = [
   { name:"Socken", frage:`In der Schublade liegen <b>10 Socken</b>: <b>6 schwarze</b> und
       <b>4 blaue</b>. Du greifst im Dunkeln <b>zwei</b> heraus.`,
     felder:[
-      {t:"zahl", l:"P(beide schwarz)", soll:1/3, hint:"gerundet 0,333"},
-      {t:"zahl", l:"P(beide gleichfarbig)", soll:7/15, hint:"gerundet 0,467"},
-      {t:"zahl", l:"P(zwei verschiedene)", soll:8/15, hint:"gerundet 0,533"}
+      {t:"zahl", l:"P(beide schwarz)", soll:1/3, hint:"auf drei Stellen runden"},
+      {t:"zahl", l:"P(beide gleichfarbig)", soll:7/15, hint:"auf drei Stellen runden"},
+      {t:"zahl", l:"P(zwei verschiedene)", soll:8/15, hint:"auf drei Stellen runden"}
     ],
     loes:`<p class="rech">P(ss) = ${fr(6,10)} · ${fr(5,9)} = ${fr(30,90)} = ${fr(1,3)} ≈ <b>0,333</b></p>
       <p class="rech">P(bb) = ${fr(4,10)} · ${fr(3,9)} = ${fr(12,90)} = ${fr(2,15)}</p>
@@ -427,7 +427,7 @@ const THEMEN = [
       geg:[[true,false,true],[false,false,false],[true,false,true]] },
     felder:[
       {t:"zahl", l:"P<sub>A</sub>(B)", soll:0.8},
-      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:70/150, hint:"gerundet 0,467"},
+      {t:"zahl", l:"P<sub><ovl>A</ovl></sub>(B)", soll:70/150, hint:"auf drei Stellen runden"},
       {t:"zahl", l:"P(B)", soll:0.6}
     ],
     loes:`<p>Ergänzen: <ovl>A</ovl>∩B = 150 − 80 = 70. A∩<ovl>B</ovl> = 100 − 80 = 20.
@@ -492,7 +492,7 @@ const THEMEN = [
     felder:[
       {t:"zahl", l:"P(W), also Weitsprung", soll:0.44},
       {t:"zahl", l:"P<sub>St</sub>(W)", soll:0.5},
-      {t:"zahl", l:"P<sub>W</sub>(St)", soll:30/66, hint:"gerundet 0,455"}
+      {t:"zahl", l:"P<sub>W</sub>(St)", soll:30/66, hint:"auf drei Stellen runden"}
     ],
     loes:`<p><ovl>St</ovl> = 150 − 60 = 90. Davon machen 54 keinen Weitsprung, also
       <ovl>St</ovl>∩W = 90 − 54 = 36. Damit W = 30 + 36 = 66 und St∩<ovl>W</ovl> = 60 − 30 = 30.</p>
@@ -536,7 +536,7 @@ const THEMEN = [
       geg:[[true,false,true],[false,false,false],[true,false,true]] },
     felder:[
       {t:"zahl", l:"P<sub>H</sub>(G)", soll:0.5},
-      {t:"zahl", l:"P<sub>G</sub>(H)", soll:1/3, hint:"gerundet 0,333"},
+      {t:"zahl", l:"P<sub>G</sub>(H)", soll:1/3, hint:"auf drei Stellen runden"},
       {t:"wahl", f:"Was bedeutet P(H ∩ <ovl>G</ovl>) = 0,15 im Sachkontext?",
        opt:["15 % der Haushalte mit Haustier haben keinen Garten.",
             "15 % aller Haushalte haben ein Haustier und keinen Garten.",
@@ -555,7 +555,7 @@ const THEMEN = [
       geg:[[true,false,true],[false,false,false],[true,false,true]] },
     felder:[
       {t:"zahl", l:"P<sub>B</sub>(F)", soll:0.5},
-      {t:"zahl", l:"P<sub>F</sub>(B)", soll:1/6, hint:"gerundet 0,167"},
+      {t:"zahl", l:"P<sub>F</sub>(B)", soll:1/6, hint:"auf drei Stellen runden"},
       {t:"zahl", l:"P(<ovl>B</ovl> ∩ <ovl>F</ovl>)", soll:0.3}
     ],
     loes:`<p>Tafel: B∩F = 0,10. B∩<ovl>F</ovl> = 0,20 − 0,10 = 0,10.
@@ -646,7 +646,7 @@ const THEMEN = [
       geg:[[false,false,false],[false,false,false],[true,false,true]] },
     felder:[
       {t:"zahl", l:"P(Z), also Gesamtzufriedenheit", soll:0.61},
-      {t:"zahl", l:"P<sub>Z</sub>(A), also Anteil Abo unter den Zufriedenen", soll:0.28/0.61, hint:"gerundet 0,459"}
+      {t:"zahl", l:"P<sub>Z</sub>(A), also Anteil Abo unter den Zufriedenen", soll:0.28/0.61, hint:"auf drei Stellen runden"}
     ],
     loes:`<p>Zuordnung: P(A) = 0,40, P<sub><ovl>A</ovl></sub>(Z) = 0,55,
       P<sub>A</sub>(<ovl>Z</ovl>) = 0,30 und damit P<sub>A</sub>(Z) = 0,70.</p>
@@ -679,7 +679,7 @@ const THEMEN = [
     felder:[
       {t:"zahl", l:"Sensitivität", soll:0.9},
       {t:"zahl", l:"Spezifität", soll:0.95},
-      {t:"zahl", l:"P(Allergie, wenn Test positiv)", soll:2/3, hint:"gerundet 0,667"}
+      {t:"zahl", l:"P(Allergie, wenn Test positiv)", soll:2/3, hint:"auf drei Stellen runden"}
     ],
     loes:`<p class="rech">Sensitivität = ${fr(54,60)} = <b>0,90 = 90 %</b></p>
       <p class="rech">Spezifität = ${fr(513,540)} = <b>0,95 = 95 %</b></p>
@@ -695,7 +695,7 @@ const THEMEN = [
     felder:[
       {t:"zahl", l:"Sensitivität", soll:0.96},
       {t:"zahl", l:"Spezifität", soll:0.96},
-      {t:"zahl", l:"P(Rauch, wenn Alarm)", soll:48/86, hint:"gerundet 0,558"}
+      {t:"zahl", l:"P(Rauch, wenn Alarm)", soll:48/86, hint:"auf drei Stellen runden"}
     ],
     loes:`<p class="rech">Sensitivität = ${fr(48,50)} = <b>0,96</b> &nbsp;&nbsp;
         Spezifität = ${fr(912,950)} = <b>0,96</b></p>
@@ -712,7 +712,7 @@ const THEMEN = [
     felder:[
       {t:"zahl", l:"Sensitivität", soll:0.9},
       {t:"zahl", l:"Spezifität", soll:0.95},
-      {t:"zahl", l:"P(faul, wenn aussortiert)", soll:36/74, hint:"gerundet 0,486"}
+      {t:"zahl", l:"P(faul, wenn aussortiert)", soll:36/74, hint:"auf drei Stellen runden"}
     ],
     loes:`<p class="rech">Sensitivität = ${fr(36,40)} = <b>0,90</b> &nbsp;&nbsp;
         Spezifität = ${fr(722,760)} = <b>0,95</b></p>
